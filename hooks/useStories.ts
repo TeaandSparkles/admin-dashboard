@@ -1,31 +1,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/types/database";
 
-export interface Novel {
-  id: string;
-  title: string;
-  description?: string | null;
-  cover_url?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export type Novel = Pick<
+  Database["public"]["Tables"]["novels"]["Row"],
+  "id" | "title" | "description" | "cover_image" | "created_at" | "published" | "age_group" | "content_type"
+>;
 
-export interface Story {
-  id: string;
-  novel_id: string;
-  title: string;
-  order_index: number;
-  created_at: string;
-}
+export type Story = Pick<
+  Database["public"]["Tables"]["stories"]["Row"],
+  "id" | "novel_id" | "title" | "order_index" | "created_at" | "published" | "story_price" | "fulfillment_type"
+>;
 
-export interface Chapter {
-  id: string;
-  story_id: string;
-  title: string;
-  content?: string | null;
-  order_index: number;
-  created_at: string;
-}
+export type Chapter = Pick<
+  Database["public"]["Tables"]["chapters"]["Row"],
+  "id" | "story_id" | "title" | "chapter_number" | "created_at" | "duration_seconds" | "video_url"
+>;
 
 interface UseStoriesResult {
   novels: Novel[];
@@ -54,16 +44,16 @@ export function useStories(): UseStoriesResult {
       const [novelsRes, storiesRes, chaptersRes] = await Promise.all([
         supabase
           .from("novels")
-          .select("id, title, description, cover_url, created_at, updated_at")
+          .select("id, title, description, cover_image, created_at, published, age_group, content_type")
           .order("created_at", { ascending: false }),
         supabase
           .from("stories")
-          .select("id, novel_id, title, order_index, created_at")
+          .select("id, novel_id, title, order_index, created_at, published, story_price, fulfillment_type")
           .order("order_index", { ascending: true }),
         supabase
           .from("chapters")
-          .select("id, story_id, title, order_index, created_at")
-          .order("order_index", { ascending: true }),
+          .select("id, story_id, title, chapter_number, created_at, duration_seconds, video_url")
+          .order("chapter_number", { ascending: true }),
       ]);
 
       if (cancelled) return;
@@ -83,12 +73,5 @@ export function useStories(): UseStoriesResult {
     return () => { cancelled = true; };
   }, [tick]);
 
-  return {
-    novels,
-    stories,
-    chapters,
-    loading,
-    error,
-    refetch: () => setTick((t) => t + 1),
-  };
+  return { novels, stories, chapters, loading, error, refetch: () => setTick((t) => t + 1) };
 }

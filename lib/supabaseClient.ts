@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -9,10 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Use createClient without a Database generic until you run:
-//   npx supabase gen types typescript --project-id <id> > types/database.ts
-// Then import Database and pass it as the generic: createClient<Database>(...)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

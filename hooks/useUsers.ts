@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/types/database";
 
-export interface AppUserRecord {
-  id: string;
-  email: string;
-  role: string;
-  created_at: string;
-  referral_code?: string | null;
-}
+export type AppUserRecord = Pick<
+  Database["public"]["Tables"]["users"]["Row"],
+  "id" | "email" | "username" | "role" | "created_at" | "phone_number" | "email_verified" | "referred_by_user_id"
+>;
 
 interface UseUsersResult {
   users: AppUserRecord[];
@@ -31,7 +29,7 @@ export function useUsers(): UseUsersResult {
 
       const { data, error: fetchError } = await supabase
         .from("users")
-        .select("id, email, role, created_at, referral_code")
+        .select("id, email, username, role, created_at, phone_number, email_verified, referred_by_user_id")
         .order("created_at", { ascending: false });
 
       if (cancelled) return;

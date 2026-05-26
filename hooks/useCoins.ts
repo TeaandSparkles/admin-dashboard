@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/types/database";
 
-export interface CoinTransaction {
-  id: string;
-  user_id: string;
-  amount: number;
-  type: string;
-  description?: string | null;
-  created_at: string;
-}
+export type CoinTransaction = Pick<
+  Database["public"]["Tables"]["coin_transactions"]["Row"],
+  "id" | "user_id" | "amount" | "reason" | "created_at"
+>;
 
 interface UseCoinsResult {
   transactions: CoinTransaction[];
@@ -32,7 +29,7 @@ export function useCoins(): UseCoinsResult {
 
       const { data, error: fetchError } = await supabase
         .from("coin_transactions")
-        .select("id, user_id, amount, type, description, created_at")
+        .select("id, user_id, amount, reason, created_at")
         .order("created_at", { ascending: false });
 
       if (cancelled) return;

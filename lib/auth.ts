@@ -32,7 +32,7 @@ export async function getUserRole(userId: string): Promise<string | null> {
     .from("users")
     .select("role")
     .eq("id", userId)
-    .single() as { data: { role: string } | null; error: { message: string } | null };
+    .single();
 
   if (error) {
     console.error("Failed to fetch user role:", error.message);

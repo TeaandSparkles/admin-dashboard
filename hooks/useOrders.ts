@@ -1,23 +1,19 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import type { Database } from "@/types/database";
 
-export interface Order {
-  id: string;
-  user_id: string;
-  total_amount: number;
-  status: string;
-  created_at: string;
-}
+export type Order = Pick<
+  Database["public"]["Tables"]["orders"]["Row"],
+  | "id" | "user_id" | "total_amount" | "status" | "created_at"
+  | "shipping_name" | "shipping_email" | "shipping_phone" | "shipping_address"
+  | "story_id" | "story_price" | "base_print_cost" | "shipping_cost"
+  | "cancellation_deadline"
+>;
 
-export interface Shipment {
-  id: string;
-  order_id: string;
-  tracking_number?: string | null;
-  carrier?: string | null;
-  status: string;
-  shipped_at?: string | null;
-  delivered_at?: string | null;
-}
+export type Shipment = Pick<
+  Database["public"]["Tables"]["shipments"]["Row"],
+  "id" | "order_id" | "tracking_number" | "carrier" | "status" | "created_at" | "package_photo_url"
+>;
 
 interface UseOrdersResult {
   orders: Order[];
@@ -44,12 +40,14 @@ export function useOrders(): UseOrdersResult {
       const [ordersRes, shipmentsRes] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, user_id, total_amount, status, created_at")
+          .select(
+            "id, user_id, total_amount, status, created_at, shipping_name, shipping_email, shipping_phone, shipping_address, story_id, story_price, base_print_cost, shipping_cost, cancellation_deadline"
+          )
           .order("created_at", { ascending: false }),
         supabase
           .from("shipments")
-          .select("id, order_id, tracking_number, carrier, status, shipped_at, delivered_at")
-          .order("shipped_at", { ascending: false }),
+          .select("id, order_id, tracking_number, carrier, status, created_at, package_photo_url")
+          .order("created_at", { ascending: false }),
       ]);
 
       if (cancelled) return;
@@ -68,11 +66,5 @@ export function useOrders(): UseOrdersResult {
     return () => { cancelled = true; };
   }, [tick]);
 
-  return {
-    orders,
-    shipments,
-    loading,
-    error,
-    refetch: () => setTick((t) => t + 1),
-  };
+  return { orders, shipments, loading, error, refetch: () => setTick((t) => t + 1) };
 }
