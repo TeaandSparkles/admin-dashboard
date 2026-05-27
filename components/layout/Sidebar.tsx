@@ -17,12 +17,12 @@ import {
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Users", href: "/dashboard/users", icon: Users },
-  { label: "Stories", href: "/dashboard/stories", icon: BookOpen },
-  { label: "Orders", href: "/dashboard/orders", icon: ShoppingCart },
-  { label: "Referrals", href: "/dashboard/referrals", icon: Share2 },
-  { label: "Coins", href: "/dashboard/coins", icon: CircleDollarSign },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Users", href: "/users", icon: Users },
+  { label: "Stories", href: "/stories", icon: BookOpen },
+  { label: "Orders", href: "/orders", icon: ShoppingCart },
+  { label: "Referrals", href: "/referrals", icon: Share2 },
+  { label: "Coins", href: "/coins", icon: CircleDollarSign },
+  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
