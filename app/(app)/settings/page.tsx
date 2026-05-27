@@ -9,28 +9,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2 } from "lucide-react";
 
+const LOCAL_KEYS = {
+  default_shipping_cost: "settings.default_shipping_cost",
+  default_print_cost: "settings.default_print_cost",
+  founders_pass_enabled: "settings.founders_pass_enabled",
+};
+
 export default function SettingsPage() {
   const { settings, loading, error, saving, saveSettings } = useSettings();
   const [saved, setSaved] = useState(false);
 
   const [form, setForm] = useState({
+    // Supabase-backed
     story_default_coin_cost: "",
     referral_signup_reward: "",
     referral_purchase_reward: "",
+    // Local-only (until columns added)
+    default_shipping_cost: "",
+    default_print_cost: "",
+    founders_pass_enabled: false,
   });
 
+  // Hydrate from Supabase + localStorage
   useEffect(() => {
     if (settings) {
-      setForm({
+      setForm((prev) => ({
+        ...prev,
         story_default_coin_cost: settings.story_default_coin_cost?.toString() ?? "",
         referral_signup_reward: settings.referral_signup_reward?.toString() ?? "",
         referral_purchase_reward: settings.referral_purchase_reward?.toString() ?? "",
-      });
+      }));
+    }
+    if (typeof window !== "undefined") {
+      setForm((prev) => ({
+        ...prev,
+        default_shipping_cost: localStorage.getItem(LOCAL_KEYS.default_shipping_cost) ?? "",
+        default_print_cost: localStorage.getItem(LOCAL_KEYS.default_print_cost) ?? "",
+        founders_pass_enabled: localStorage.getItem(LOCAL_KEYS.founders_pass_enabled) === "true",
+      }));
     }
   }, [settings]);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    // Persist Supabase-backed values
     const ok = await saveSettings({
       story_default_coin_cost: form.story_default_coin_cost
         ? Number(form.story_default_coin_cost)
@@ -42,15 +64,23 @@ export default function SettingsPage() {
         ? Number(form.referral_purchase_reward)
         : null,
     });
+
+    // Persist local-only values
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LOCAL_KEYS.default_shipping_cost, form.default_shipping_cost);
+      localStorage.setItem(LOCAL_KEYS.default_print_cost, form.default_print_cost);
+      localStorage.setItem(LOCAL_KEYS.founders_pass_enabled, String(form.founders_pass_enabled));
+    }
+
     if (ok) {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     }
   }
 
-  function handleChange(key: keyof typeof form) {
-    return (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  function handleChange<K extends keyof typeof form>(key: K) {
+    return (value: typeof form[K]) =>
+      setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   return (
@@ -58,7 +88,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Platform-wide rules — changes reflect immediately in the mobile app via Supabase
+          Platform-wide rules — coin & referral changes reflect immediately in the mobile app
         </p>
       </div>
 
@@ -79,72 +109,105 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-base">Coin Rules</CardTitle>
             <CardDescription>
-              Controls how coins are earned and spent across the platform
+              Stored in Supabase · live across all platforms
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="story_cost">Coins to unlock a story (default)</Label>
-              <Input
-                id="story_cost"
-                type="number"
-                min="0"
-                value={form.story_default_coin_cost}
-                onChange={handleChange("story_default_coin_cost")}
-                placeholder="e.g. 100"
-                className="max-w-xs"
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Applied when a story has no individual price set
-              </p>
-            </div>
+            <NumberField
+              id="story_cost"
+              label="Coins required per story unlock"
+              hint="Applied when a story has no individual price set"
+              value={form.story_default_coin_cost}
+              onChange={handleChange("story_default_coin_cost")}
+              disabled={loading}
+            />
           </CardContent>
         </Card>
-
-        <Separator className="bg-gray-100" />
 
         {/* Referral rules */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-base">Referral Rewards</CardTitle>
             <CardDescription>
-              Coin bonuses awarded when referrals are completed
+              Stored in Supabase · coin bonuses for referrals
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="signup_reward">Coins on referral sign-up</Label>
-              <Input
-                id="signup_reward"
-                type="number"
-                min="0"
-                value={form.referral_signup_reward}
-                onChange={handleChange("referral_signup_reward")}
-                placeholder="e.g. 50"
-                className="max-w-xs"
+            <NumberField
+              id="signup_reward"
+              label="Coins on referral sign-up"
+              hint="Awarded to referrer when referred user creates an account"
+              value={form.referral_signup_reward}
+              onChange={handleChange("referral_signup_reward")}
+              disabled={loading}
+            />
+            <NumberField
+              id="purchase_reward"
+              label="Coins on referral purchase"
+              hint="Awarded to referrer when referred user makes their first purchase"
+              value={form.referral_purchase_reward}
+              onChange={handleChange("referral_purchase_reward")}
+              disabled={loading}
+            />
+          </CardContent>
+        </Card>
+
+        <Separator className="bg-gray-100" />
+
+        {/* Fulfillment rules */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base">Fulfillment Defaults</CardTitle>
+            <CardDescription>
+              Stored locally · default costs applied to new orders
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <NumberField
+              id="ship_cost"
+              label="Default shipping cost (USD)"
+              hint="Applied to new orders unless overridden"
+              value={form.default_shipping_cost}
+              onChange={handleChange("default_shipping_cost")}
+              disabled={loading}
+              step="0.01"
+            />
+            <NumberField
+              id="print_cost"
+              label="Default print cost (USD)"
+              hint="Base print cost per physical book order"
+              value={form.default_print_cost}
+              onChange={handleChange("default_print_cost")}
+              disabled={loading}
+              step="0.01"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Founders pass */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base">Founders Pass</CardTitle>
+            <CardDescription>
+              Stored locally · special access toggle
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-gray-300"
+                checked={form.founders_pass_enabled}
+                onChange={(e) => handleChange("founders_pass_enabled")(e.target.checked)}
                 disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">
-                Awarded to referrer when referred user creates an account
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="purchase_reward">Coins on referral purchase</Label>
-              <Input
-                id="purchase_reward"
-                type="number"
-                min="0"
-                value={form.referral_purchase_reward}
-                onChange={handleChange("referral_purchase_reward")}
-                placeholder="e.g. 200"
-                className="max-w-xs"
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Awarded to referrer when referred user makes their first purchase
-              </p>
-            </div>
+              <div>
+                <p className="text-sm font-medium">Founders Pass enabled</p>
+                <p className="text-xs text-muted-foreground">
+                  Grants premium access to founding members
+                </p>
+              </div>
+            </label>
           </CardContent>
         </Card>
 
@@ -159,6 +222,42 @@ export default function SettingsPage() {
           )}
         </div>
       </form>
+    </div>
+  );
+}
+
+// Small reusable number field
+function NumberField({
+  id,
+  label,
+  hint,
+  value,
+  onChange,
+  disabled,
+  step,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+  step?: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        type="number"
+        min="0"
+        step={step ?? "1"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="max-w-xs"
+        disabled={disabled}
+      />
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }

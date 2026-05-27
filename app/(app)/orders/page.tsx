@@ -5,7 +5,6 @@ import { supabase } from "@/lib/supabaseClient";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -22,14 +21,24 @@ interface OrderRow {
   shipping_name: string | null;
   user: { email: string | null; username: string } | null;
   story: { title: string } | null;
-  shipment: { status: string | null; tracking_number: string | null } | null;
+  shipment: { id: string; status: string | null; tracking_number: string | null } | null;
 }
+
+const ORDER_STATUSES = [
+  "pending",
+  "packed",
+  "shipped",
+  "delivered",
+  "refunded",
+] as const;
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700",
-  confirmed: "bg-blue-100 text-blue-700",
+  packed: "bg-blue-100 text-blue-700",
   shipped: "bg-indigo-100 text-indigo-700",
   delivered: "bg-green-100 text-green-700",
+  refunded: "bg-red-100 text-red-700",
+  confirmed: "bg-blue-100 text-blue-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
@@ -38,27 +47,43 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [savingId, setSavingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchOrders() {
-      setLoading(true);
-      const { data, error: err } = await supabase
-        .from("orders")
-        .select(
-          `id, status, total_amount, base_print_cost, shipping_cost, story_price,
-           created_at, shipping_name,
-           user:users(email, username),
-           story:stories(title),
-           shipment:shipments(status, tracking_number)`
-        )
-        .order("created_at", { ascending: false });
+  async function fetchOrders() {
+    setLoading(true);
+    const { data, error: err } = await supabase
+      .from("orders")
+      .select(
+        `id, status, total_amount, base_print_cost, shipping_cost, story_price,
+         created_at, shipping_name,
+         user:users(email, username),
+         story:stories(title),
+         shipment:shipments(id, status, tracking_number)`
+      )
+      .order("created_at", { ascending: false });
 
-      if (err) setError(err.message);
-      else setOrders((data as unknown as OrderRow[]) ?? []);
-      setLoading(false);
+    if (err) setError(err.message);
+    else setOrders((data as unknown as OrderRow[]) ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => { fetchOrders(); }, []);
+
+  async function updateOrderStatus(orderId: string, status: string) {
+    setSavingId(orderId);
+    const { error: err } = await supabase
+      .from("orders")
+      .update({ status })
+      .eq("id", orderId);
+    if (err) {
+      setError(err.message);
+    } else {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status } : o))
+      );
     }
-    fetchOrders();
-  }, []);
+    setSavingId(null);
+  }
 
   const filtered =
     statusFilter === "all"
@@ -71,7 +96,7 @@ export default function OrdersPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Orders</h1>
           <p className="text-sm text-muted-foreground">
-            {orders.length} total orders
+            {orders.length} total orders · click status to update
           </p>
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "all")}>
@@ -80,11 +105,9 @@ export default function OrdersPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="confirmed">Confirmed</SelectItem>
-            <SelectItem value="shipped">Shipped</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
+            {ORDER_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -100,11 +123,11 @@ export default function OrdersPage() {
               <TableRow className="border-gray-100">
                 <TableHead>Customer</TableHead>
                 <TableHead>Story</TableHead>
-                <TableHead>Order Status</TableHead>
-                <TableHead>Shipping</TableHead>
-                <TableHead className="text-right">Story</TableHead>
-                <TableHead className="text-right">Print</TableHead>
-                <TableHead className="text-right">Shipping</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Shipment</TableHead>
+                <TableHead className="text-right">Story $</TableHead>
+                <TableHead className="text-right">Print $</TableHead>
+                <TableHead className="text-right">Ship $</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Date</TableHead>
               </TableRow>
@@ -126,16 +149,27 @@ export default function OrdersPage() {
                 filtered.map((order) => (
                   <TableRow key={order.id} className="border-gray-50">
                     <TableCell>
-                      <p className="font-medium">{order.user?.username ?? "—"}</p>
+                      <p className="font-medium">{order.user?.username ?? order.shipping_name ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">{order.user?.email ?? ""}</p>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {order.story?.title ?? "—"}
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status ?? ""] ?? "bg-gray-100 text-gray-600"}`}>
-                        {order.status ?? "unknown"}
-                      </span>
+                      <Select
+                        value={order.status ?? "pending"}
+                        onValueChange={(v) => v && updateOrderStatus(order.id, v)}
+                        disabled={savingId === order.id}
+                      >
+                        <SelectTrigger className="h-7 w-28 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ORDER_STATUSES.map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>
                       {order.shipment ? (
@@ -153,16 +187,16 @@ export default function OrdersPage() {
                         <span className="text-xs text-muted-foreground">No shipment</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right text-sm">
+                    <TableCell className="text-right text-sm tabular-nums">
                       ${(order.story_price ?? 0).toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-right text-sm">
+                    <TableCell className="text-right text-sm tabular-nums">
                       ${(order.base_print_cost ?? 0).toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-right text-sm">
+                    <TableCell className="text-right text-sm tabular-nums">
                       ${(order.shipping_cost ?? 0).toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-right font-semibold">
+                    <TableCell className="text-right font-semibold tabular-nums">
                       ${(order.total_amount ?? 0).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
