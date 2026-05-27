@@ -50,7 +50,7 @@ export default function LoginPage() {
 
       if (!isAllowedRole(role)) {
         await supabase.auth.signOut();
-        setError("Access denied. This dashboard is restricted to admins and accounting staff.");
+        setError("Access denied. This dashboard is restricted to admin, accounting, and management staff.");
         return;
       }
 

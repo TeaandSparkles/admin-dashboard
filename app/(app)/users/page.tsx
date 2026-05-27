@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useUsers } from "@/hooks/useUsers";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -11,10 +12,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronRight } from "lucide-react";
 
 const roleBadge: Record<string, string> = {
   admin: "bg-red-100 text-red-700",
   accounting: "bg-blue-100 text-blue-700",
+  management: "bg-purple-100 text-purple-700",
   user: "bg-gray-100 text-gray-700",
 };
 
@@ -58,6 +61,7 @@ export default function UsersPage() {
                 <SelectContent>
                   <SelectItem value="all">All roles</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="management">Management</SelectItem>
                   <SelectItem value="accounting">Accounting</SelectItem>
                   <SelectItem value="user">User</SelectItem>
                 </SelectContent>
@@ -77,26 +81,31 @@ export default function UsersPage() {
                 <TableHead>Role</TableHead>
                 <TableHead>Verified</TableHead>
                 <TableHead>Joined</TableHead>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
                     Loading…
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
                     No users found
                   </TableCell>
                 </TableRow>
               ) : (
                 filtered.map((user) => (
-                  <TableRow key={user.id} className="border-gray-50">
-                    <TableCell className="font-medium">{user.username}</TableCell>
-                    <TableCell className="text-muted-foreground">{user.email ?? "—"}</TableCell>
+                  <TableRow key={user.id} className="cursor-pointer border-gray-50 hover:bg-gray-50">
+                    <TableCell className="font-medium">
+                      <Link href={`/users/${user.id}`} className="block">{user.username}</Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      <Link href={`/users/${user.id}`} className="block">{user.email ?? "—"}</Link>
+                    </TableCell>
                     <TableCell>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -115,6 +124,11 @@ export default function UsersPage() {
                       {user.created_at
                         ? new Date(user.created_at).toLocaleDateString()
                         : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/users/${user.id}`}>
+                        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))

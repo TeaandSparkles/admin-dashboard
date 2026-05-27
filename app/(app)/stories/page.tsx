@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useStories } from "@/hooks/useStories";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -23,10 +24,12 @@ export default function StoriesPage() {
             {stories.length} stories across {novels.length} novels
           </p>
         </div>
-        <Button size="sm" className="gap-2" disabled>
-          <Plus className="h-4 w-4" />
-          Create Story
-        </Button>
+        <Link href="/stories/new">
+          <Button size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Story
+          </Button>
+        </Link>
       </div>
 
       <Card className="rounded-2xl border-0 shadow-sm">

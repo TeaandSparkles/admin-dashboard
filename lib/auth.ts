@@ -1,7 +1,7 @@
 import { supabase } from "./supabaseClient";
 import type { Session, User } from "@supabase/supabase-js";
 
-export type AllowedRole = "admin" | "accounting";
+export type AllowedRole = "admin" | "accounting" | "management";
 
 export interface AppUser {
   id: string;
@@ -55,7 +55,7 @@ export async function getAppUser(): Promise<AppUser | null> {
 }
 
 export function isAllowedRole(role: string | null): role is AllowedRole {
-  return role === "admin" || role === "accounting";
+  return role === "admin" || role === "accounting" || role === "management";
 }
 
 export async function signOut(): Promise<void> {

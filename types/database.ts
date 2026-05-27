@@ -319,6 +319,9 @@ export type Database = {
       }
       settings: {
         Row: {
+          default_print_cost: number | null
+          default_shipping_cost: number | null
+          founders_pass_enabled: boolean | null
           id: string
           referral_purchase_reward: number | null
           referral_signup_reward: number | null
@@ -326,6 +329,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          default_print_cost?: number | null
+          default_shipping_cost?: number | null
+          founders_pass_enabled?: boolean | null
           id?: string
           referral_purchase_reward?: number | null
           referral_signup_reward?: number | null
@@ -333,11 +339,127 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          default_print_cost?: number | null
+          default_shipping_cost?: number | null
+          founders_pass_enabled?: boolean | null
           id?: string
           referral_purchase_reward?: number | null
           referral_signup_reward?: number | null
           story_default_coin_cost?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string | null
+          type: string
+          title: string
+          message: string | null
+          read: boolean
+          created_at: string
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          type: string
+          title: string
+          message?: string | null
+          read?: boolean
+          created_at?: string
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          type?: string
+          title?: string
+          message?: string | null
+          read?: boolean
+          created_at?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_assets: {
+        Row: {
+          id: string
+          type: string
+          url: string
+          linked_chapter_id: string | null
+          linked_story_id: string | null
+          linked_novel_id: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          url: string
+          linked_chapter_id?: string | null
+          linked_story_id?: string | null
+          linked_novel_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          type?: string
+          url?: string
+          linked_chapter_id?: string | null
+          linked_story_id?: string | null
+          linked_novel_id?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      content_versions: {
+        Row: {
+          id: string
+          chapter_id: string | null
+          story_id: string | null
+          version_number: number
+          prompt_used: string | null
+          generated_text: string | null
+          status: string
+          approved_by: string | null
+          approved_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          chapter_id?: string | null
+          story_id?: string | null
+          version_number?: number
+          prompt_used?: string | null
+          generated_text?: string | null
+          status?: string
+          approved_by?: string | null
+          approved_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          chapter_id?: string | null
+          story_id?: string | null
+          version_number?: number
+          prompt_used?: string | null
+          generated_text?: string | null
+          status?: string
+          approved_by?: string | null
+          approved_at?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -580,6 +702,7 @@ export type Database = {
       }
       users: {
         Row: {
+          coin_balance: number | null
           created_at: string | null
           default_shipping_address: string | null
           default_shipping_name: string | null
@@ -589,11 +712,13 @@ export type Database = {
           id: string
           phone_number: string | null
           phone_verified: boolean | null
+          referral_code: string | null
           referred_by_user_id: string | null
           role: string | null
           username: string
         }
         Insert: {
+          coin_balance?: number | null
           created_at?: string | null
           default_shipping_address?: string | null
           default_shipping_name?: string | null
@@ -603,11 +728,13 @@ export type Database = {
           id?: string
           phone_number?: string | null
           phone_verified?: boolean | null
+          referral_code?: string | null
           referred_by_user_id?: string | null
           role?: string | null
           username: string
         }
         Update: {
+          coin_balance?: number | null
           created_at?: string | null
           default_shipping_address?: string | null
           default_shipping_name?: string | null
@@ -617,6 +744,7 @@ export type Database = {
           id?: string
           phone_number?: string | null
           phone_verified?: boolean | null
+          referral_code?: string | null
           referred_by_user_id?: string | null
           role?: string | null
           username?: string
@@ -638,6 +766,9 @@ export type Database = {
     Functions: {
       is_accounting: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_management: { Args: never; Returns: boolean }
+      is_admin_or_accounting: { Args: never; Returns: boolean }
+      is_admin_or_management: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
