@@ -41,12 +41,20 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-gray-100 bg-white px-3 py-6">
+    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-6">
       {/* Brand */}
       <div className="mb-8 px-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Admin Panel
-        </p>
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-400 shadow-md">
+            <Sparkles className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold tracking-tight">Tea & Sparkles</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Admin Panel
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Nav */}
@@ -61,13 +69,18 @@ export default function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
                 active
-                  ? "bg-gray-100 text-gray-900"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-gradient-to-r from-indigo-500/15 to-cyan-400/10 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              <Icon
+                className={cn(
+                  "h-4 w-4 shrink-0 transition-colors",
+                  active ? "text-indigo-600" : "text-sidebar-foreground/60"
+                )}
+              />
               {label}
             </Link>
           );
@@ -77,7 +90,7 @@ export default function Sidebar() {
       {/* Sign out */}
       <button
         onClick={handleSignOut}
-        className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-900"
+        className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-sidebar-foreground/60 transition-colors hover:bg-rose-50 hover:text-rose-600"
       >
         <LogOut className="h-4 w-4 shrink-0" />
         Sign out

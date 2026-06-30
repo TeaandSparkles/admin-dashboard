@@ -48,73 +48,114 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+  ═══════════════════════════════════════════════════════════
+  COSMIC FAMILY palette — futuristic + warm + family-friendly
+  ═══════════════════════════════════════════════════════════
+  Primary:   #6366F1  Cosmic Indigo  → buttons, key actions
+  Accent:    #06B6D4  Sky Teal       → secondary highlights
+  Highlight: #FB7185  Coral Peach    → warm accents, badges
+  Background:#FAF8FF  Lavender Mist  → page background
+  Text:      #1E293B  Soft Slate     → readable, never harsh black
+*/
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  /* Pure base — clean canvas */
+  --background: oklch(0.985 0.012 295);          /* Lavender mist */
+  --foreground: oklch(0.27 0.04 260);            /* Soft slate (not black) */
+
+  --card: oklch(1 0 0);                          /* Pure white card on lavender bg */
+  --card-foreground: oklch(0.27 0.04 260);
+
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.27 0.04 260);
+
+  /* PRIMARY — Cosmic Indigo */
+  --primary: oklch(0.61 0.21 280);
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* SECONDARY — Lavender chip backgrounds */
+  --secondary: oklch(0.96 0.03 290);
+  --secondary-foreground: oklch(0.37 0.13 280);
+
+  /* MUTED — very soft lavender */
+  --muted: oklch(0.96 0.02 290);
+  --muted-foreground: oklch(0.55 0.05 270);
+
+  /* ACCENT — Sky Teal */
+  --accent: oklch(0.93 0.08 200);
+  --accent-foreground: oklch(0.35 0.13 220);
+
+  /* DESTRUCTIVE — softer coral (not harsh red) */
+  --destructive: oklch(0.66 0.21 18);
+
+  /* Borders — very subtle lavender */
+  --border: oklch(0.92 0.02 290);
+  --input: oklch(0.92 0.02 290);
+  --ring: oklch(0.61 0.21 280);
+
+  /* Charts — cosmic gradient progression */
+  --chart-1: oklch(0.61 0.21 280);               /* Indigo */
+  --chart-2: oklch(0.68 0.18 200);               /* Teal */
+  --chart-3: oklch(0.72 0.18 350);               /* Coral */
+  --chart-4: oklch(0.78 0.15 100);               /* Mint */
+  --chart-5: oklch(0.7 0.18 50);                 /* Warm amber */
+
+  --radius: 0.875rem;                            /* Slightly more rounded — friendlier */
+
+  /* Sidebar — soft white with indigo active state */
+  --sidebar: oklch(0.995 0.005 295);
+  --sidebar-foreground: oklch(0.4 0.04 270);
+  --sidebar-primary: oklch(0.61 0.21 280);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.96 0.03 290);
+  --sidebar-accent-foreground: oklch(0.37 0.13 280);
+  --sidebar-border: oklch(0.92 0.02 290);
+  --sidebar-ring: oklch(0.61 0.21 280);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  /* Cosmic dark — deep indigo nights */
+  --background: oklch(0.16 0.04 270);
+  --foreground: oklch(0.97 0.01 280);
+
+  --card: oklch(0.22 0.05 270);
+  --card-foreground: oklch(0.97 0.01 280);
+
+  --popover: oklch(0.22 0.05 270);
+  --popover-foreground: oklch(0.97 0.01 280);
+
+  --primary: oklch(0.7 0.2 280);
+  --primary-foreground: oklch(0.16 0.04 270);
+
+  --secondary: oklch(0.3 0.06 275);
+  --secondary-foreground: oklch(0.97 0.01 280);
+
+  --muted: oklch(0.3 0.06 275);
+  --muted-foreground: oklch(0.72 0.04 280);
+
+  --accent: oklch(0.35 0.12 220);
+  --accent-foreground: oklch(0.97 0.01 280);
+
+  --destructive: oklch(0.72 0.19 22);
+
+  --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --ring: oklch(0.7 0.2 280);
+
+  --chart-1: oklch(0.7 0.2 280);
+  --chart-2: oklch(0.72 0.16 200);
+  --chart-3: oklch(0.74 0.18 350);
+  --chart-4: oklch(0.8 0.15 100);
+  --chart-5: oklch(0.72 0.18 50);
+
+  --sidebar: oklch(0.22 0.05 270);
+  --sidebar-foreground: oklch(0.97 0.01 280);
+  --sidebar-primary: oklch(0.7 0.2 280);
+  --sidebar-primary-foreground: oklch(0.16 0.04 270);
+  --sidebar-accent: oklch(0.3 0.06 275);
+  --sidebar-accent-foreground: oklch(0.97 0.01 280);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.7 0.2 280);
 }
 
 @layer base {
@@ -123,6 +164,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Subtle cosmic gradient texture in background */
+    background-image:
+      radial-gradient(ellipse at 0% 0%, oklch(0.96 0.05 290) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 100%, oklch(0.96 0.05 200) 0%, transparent 50%);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;

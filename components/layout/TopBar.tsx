@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { getAppUser, type AppUser } from "@/lib/auth";
 
 const roleBadge: Record<string, string> = {
-  admin: "bg-red-50 text-red-700 ring-red-200",
-  accounting: "bg-blue-50 text-blue-700 ring-blue-200",
-  management: "bg-purple-50 text-purple-700 ring-purple-200",
-  user: "bg-gray-50 text-gray-700 ring-gray-200",
+  admin: "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm",
+  accounting: "bg-gradient-to-r from-cyan-500 to-sky-500 text-white shadow-sm",
+  management: "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm",
+  user: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
 };
 
 export default function TopBar() {
@@ -18,19 +18,21 @@ export default function TopBar() {
   }, []);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-gray-100 bg-white px-6">
+    <header className="flex h-14 items-center justify-between border-b border-border bg-background/60 px-6 backdrop-blur">
       <div>
-        <p className="text-xs text-muted-foreground">Admin Control Panel</p>
+        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          Admin Control Panel
+        </p>
       </div>
       <div className="flex items-center gap-3">
         {user ? (
           <>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user.email ?? "—"}</p>
-              <p className="text-xs text-muted-foreground">Signed in</p>
+              <p className="text-sm font-medium">{user.email ?? "—"}</p>
+              <p className="text-[10px] text-muted-foreground">Signed in</p>
             </div>
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                 roleBadge[user.role ?? "user"] ?? roleBadge.user
               }`}
             >
