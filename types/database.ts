@@ -326,6 +326,9 @@ export type Database = {
           referral_purchase_reward: number | null
           referral_signup_reward: number | null
           story_default_coin_cost: number | null
+          streak_bonus_chapters: number | null
+          streak_enabled: boolean | null
+          streak_nights_required: number | null
           updated_at: string | null
         }
         Insert: {
@@ -336,6 +339,9 @@ export type Database = {
           referral_purchase_reward?: number | null
           referral_signup_reward?: number | null
           story_default_coin_cost?: number | null
+          streak_bonus_chapters?: number | null
+          streak_enabled?: boolean | null
+          streak_nights_required?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -346,7 +352,70 @@ export type Database = {
           referral_purchase_reward?: number | null
           referral_signup_reward?: number | null
           story_default_coin_cost?: number | null
+          streak_bonus_chapters?: number | null
+          streak_enabled?: boolean | null
+          streak_nights_required?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      listening_streaks: {
+        Row: {
+          user_id: string
+          current_streak: number
+          longest_streak: number
+          last_listened_date: string | null
+          total_rewards_earned: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          current_streak?: number
+          longest_streak?: number
+          last_listened_date?: string | null
+          total_rewards_earned?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          current_streak?: number
+          longest_streak?: number
+          last_listened_date?: string | null
+          total_rewards_earned?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      streak_events: {
+        Row: {
+          id: string
+          user_id: string
+          series_id: string | null
+          chapter_id: string | null
+          mode: string
+          listened_at: string
+          date_key: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          series_id?: string | null
+          chapter_id?: string | null
+          mode: string
+          listened_at?: string
+          date_key?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          series_id?: string | null
+          chapter_id?: string | null
+          mode?: string
+          listened_at?: string
+          date_key?: string
         }
         Relationships: []
       }
