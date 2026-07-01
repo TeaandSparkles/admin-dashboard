@@ -126,13 +126,13 @@ export default function NewStoryPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <Link href="/stories" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="mr-1 h-4 w-4" /> Back to stories
+        <ChevronLeft className="mr-1 h-4 w-4" /> Back to series
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Create Story</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Create Series</h1>
         <p className="text-sm text-muted-foreground">
-          Add a new story under an existing novel — or start a fresh novel with it
+          Add a new series under an existing novel — or start a fresh novel with it. Each series bundles a printed book + audio + AI visuals.
         </p>
       </div>
 
@@ -142,7 +142,7 @@ export default function NewStoryPage() {
 
       {saved && (
         <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-          <CheckCircle2 className="h-4 w-4" /> Story created · redirecting…
+          <CheckCircle2 className="h-4 w-4" /> Series created · redirecting…
         </div>
       )}
 
@@ -210,14 +210,15 @@ export default function NewStoryPage() {
           </CardContent>
         </Card>
 
-        {/* Story */}
+        {/* Series */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">2. Story details</CardTitle>
+            <CardTitle className="text-base">2. Series details</CardTitle>
+            <CardDescription>What the customer buys — this bundle unlocks lifetime access + a printed book</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="storyTitle">Title *</Label>
+              <Label htmlFor="storyTitle">Series title *</Label>
               <Input
                 id="storyTitle"
                 value={storyTitle}
@@ -235,14 +236,15 @@ export default function NewStoryPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="storyPrice">Price (coins)</Label>
+                <Label htmlFor="storyPrice">Bundle price (USD)</Label>
                 <Input
                   id="storyPrice"
                   type="number"
                   min="0"
+                  step="0.01"
                   value={storyPrice}
                   onChange={(e) => setStoryPrice(e.target.value)}
-                  placeholder="e.g. 100"
+                  placeholder="e.g. 14.99"
                 />
               </div>
               <div className="space-y-2">
@@ -255,8 +257,8 @@ export default function NewStoryPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="digital">Digital</SelectItem>
-                    <SelectItem value="physical">Physical</SelectItem>
+                    <SelectItem value="physical">Book + digital</SelectItem>
+                    <SelectItem value="digital">Digital only</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -277,7 +279,7 @@ export default function NewStoryPage() {
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-base">3. First chapter (optional)</CardTitle>
-            <CardDescription>Add one now or add chapters later from the story detail page</CardDescription>
+            <CardDescription>Add one now or add chapters later from the series detail page</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -296,7 +298,7 @@ export default function NewStoryPage() {
 
         <div className="flex gap-3">
           <Button type="submit" disabled={submitting}>
-            {submitting ? "Creating…" : "Create story"}
+            {submitting ? "Creating…" : "Create series"}
           </Button>
           <Link href="/stories">
             <Button type="button" variant="outline">Cancel</Button>

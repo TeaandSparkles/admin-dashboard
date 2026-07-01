@@ -10,23 +10,21 @@ import {
   BookOpen,
   ShoppingCart,
   Truck,
-  Share2,
-  CircleDollarSign,
   Sparkles,
   Bell,
   Settings,
   LogOut,
+  Flame,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Users", href: "/users", icon: Users },
-  { label: "Stories", href: "/stories", icon: BookOpen },
+  { label: "Series", href: "/stories", icon: BookOpen },
   { label: "AI Studio", href: "/ai", icon: Sparkles },
   { label: "Orders", href: "/orders", icon: ShoppingCart },
   { label: "Shipments", href: "/shipments", icon: Truck },
-  { label: "Referrals", href: "/referrals", icon: Share2 },
-  { label: "Coins", href: "/coins", icon: CircleDollarSign },
+  { label: "Listening Streaks", href: "/streaks", icon: Flame },
   { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

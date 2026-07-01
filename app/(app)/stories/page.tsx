@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 
-export default function StoriesPage() {
+export default function SeriesPage() {
   const { novels, stories, loading, error } = useStories();
 
   const novelMap = Object.fromEntries(novels.map((n) => [n.id, n.title]));
@@ -19,22 +19,22 @@ export default function StoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Stories</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Series</h1>
           <p className="text-sm text-muted-foreground">
-            {stories.length} stories across {novels.length} novels
+            {stories.length} series across {novels.length} novels
           </p>
         </div>
         <Link href="/stories/new">
           <Button size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
-            Create Story
+            Create Series
           </Button>
         </Link>
       </div>
 
       <Card className="rounded-2xl border-0 shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-base">All Stories</CardTitle>
+          <CardTitle className="text-base">All Series</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {error && (
@@ -45,7 +45,7 @@ export default function StoriesPage() {
               <TableRow className="border-gray-100">
                 <TableHead>Title</TableHead>
                 <TableHead>Novel</TableHead>
-                <TableHead>Price (coins)</TableHead>
+                <TableHead>Price (USD)</TableHead>
                 <TableHead>Fulfillment</TableHead>
                 <TableHead>Published</TableHead>
                 <TableHead>Created</TableHead>
@@ -61,7 +61,7 @@ export default function StoriesPage() {
               ) : stories.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    No stories yet
+                    No series yet — create your first with the button above
                   </TableCell>
                 </TableRow>
               ) : (
@@ -71,12 +71,12 @@ export default function StoriesPage() {
                     <TableCell className="text-muted-foreground">
                       {novelMap[story.novel_id ?? ""] ?? "—"}
                     </TableCell>
-                    <TableCell>
-                      {story.story_price != null ? story.story_price.toLocaleString() : "—"}
+                    <TableCell className="tabular-nums">
+                      {story.story_price != null ? `$${Number(story.story_price).toFixed(2)}` : "—"}
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-                        {story.fulfillment_type ?? "digital"}
+                        {story.fulfillment_type ?? "digital + book"}
                       </span>
                     </TableCell>
                     <TableCell>
