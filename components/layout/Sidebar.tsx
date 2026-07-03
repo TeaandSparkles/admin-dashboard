@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   Flame,
+  Database,
 } from "lucide-react";
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { label: "Shipments", href: "/shipments", icon: Truck },
   { label: "Listening Streaks", href: "/streaks", icon: Flame },
   { label: "Notifications", href: "/notifications", icon: Bell },
+  { label: "Setup / SQL", href: "/setup", icon: Database },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -43,7 +45,7 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="mb-8 px-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-400 shadow-md">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-400 shadow-md">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -69,14 +71,14 @@ export default function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
                 active
-                  ? "bg-gradient-to-r from-indigo-500/15 to-cyan-400/10 text-indigo-700 shadow-sm ring-1 ring-indigo-200/50"
+                  ? "bg-gradient-to-r from-blue-500/15 to-teal-400/10 text-blue-700 shadow-sm ring-1 ring-blue-200/50"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
               )}
             >
               <Icon
                 className={cn(
                   "h-4 w-4 shrink-0 transition-colors",
-                  active ? "text-indigo-600" : "text-sidebar-foreground/60"
+                  active ? "text-blue-600" : "text-sidebar-foreground/60"
                 )}
               />
               {label}
