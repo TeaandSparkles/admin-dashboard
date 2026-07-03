@@ -66,8 +66,12 @@ export default function SeriesPage() {
                 </TableRow>
               ) : (
                 stories.map((story) => (
-                  <TableRow key={story.id} className="border-gray-50">
-                    <TableCell className="font-medium">{story.title}</TableCell>
+                  <TableRow key={story.id} className="border-gray-50 cursor-pointer hover:bg-blue-50/40">
+                    <TableCell className="font-medium">
+                      <Link href={`/stories/${story.id}`} className="block hover:text-blue-700">
+                        {story.title}
+                      </Link>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {novelMap[story.novel_id ?? ""] ?? "—"}
                     </TableCell>

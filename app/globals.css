@@ -50,112 +50,112 @@
 
 /*
   ═══════════════════════════════════════════════════════════
-  COSMIC FAMILY palette — futuristic + warm + family-friendly
+  OCEAN palette — clear blue + teal, calm and modern
   ═══════════════════════════════════════════════════════════
-  Primary:   #6366F1  Cosmic Indigo  → buttons, key actions
+  Primary:   #2563EB  Ocean Blue     → buttons, key actions
   Accent:    #06B6D4  Sky Teal       → secondary highlights
-  Highlight: #FB7185  Coral Peach    → warm accents, badges
-  Background:#FAF8FF  Lavender Mist  → page background
-  Text:      #1E293B  Soft Slate     → readable, never harsh black
+  Highlight: #14B8A6  Deep Teal      → active nav, badges
+  Background:#F5FAFF  Sky Mist       → page background
+  Text:      #0F1E33  Deep Navy      → readable, never harsh black
 */
 :root {
   /* Pure base — clean canvas */
-  --background: oklch(0.985 0.012 295);          /* Lavender mist */
-  --foreground: oklch(0.27 0.04 260);            /* Soft slate (not black) */
+  --background: oklch(0.985 0.008 220);          /* Sky mist */
+  --foreground: oklch(0.27 0.04 240);            /* Deep navy (not black) */
 
-  --card: oklch(1 0 0);                          /* Pure white card on lavender bg */
-  --card-foreground: oklch(0.27 0.04 260);
+  --card: oklch(1 0 0);                          /* Pure white card on sky bg */
+  --card-foreground: oklch(0.27 0.04 240);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.27 0.04 260);
+  --popover-foreground: oklch(0.27 0.04 240);
 
-  /* PRIMARY — Cosmic Indigo */
-  --primary: oklch(0.61 0.21 280);
+  /* PRIMARY — Ocean Blue */
+  --primary: oklch(0.58 0.19 250);
   --primary-foreground: oklch(0.99 0 0);
 
-  /* SECONDARY — Lavender chip backgrounds */
-  --secondary: oklch(0.96 0.03 290);
-  --secondary-foreground: oklch(0.37 0.13 280);
+  /* SECONDARY — Pale sky chip backgrounds */
+  --secondary: oklch(0.96 0.03 220);
+  --secondary-foreground: oklch(0.37 0.13 245);
 
-  /* MUTED — very soft lavender */
-  --muted: oklch(0.96 0.02 290);
-  --muted-foreground: oklch(0.55 0.05 270);
+  /* MUTED — very soft sky */
+  --muted: oklch(0.96 0.02 220);
+  --muted-foreground: oklch(0.55 0.05 235);
 
   /* ACCENT — Sky Teal */
   --accent: oklch(0.93 0.08 200);
-  --accent-foreground: oklch(0.35 0.13 220);
+  --accent-foreground: oklch(0.35 0.13 210);
 
-  /* DESTRUCTIVE — softer coral (not harsh red) */
+  /* DESTRUCTIVE — softer coral (kept, gentle red) */
   --destructive: oklch(0.66 0.21 18);
 
-  /* Borders — very subtle lavender */
-  --border: oklch(0.92 0.02 290);
-  --input: oklch(0.92 0.02 290);
-  --ring: oklch(0.61 0.21 280);
+  /* Borders — very subtle sky */
+  --border: oklch(0.92 0.02 220);
+  --input: oklch(0.92 0.02 220);
+  --ring: oklch(0.58 0.19 250);
 
-  /* Charts — cosmic gradient progression */
-  --chart-1: oklch(0.61 0.21 280);               /* Indigo */
-  --chart-2: oklch(0.68 0.18 200);               /* Teal */
+  /* Charts — ocean gradient progression */
+  --chart-1: oklch(0.58 0.19 250);               /* Blue */
+  --chart-2: oklch(0.68 0.14 195);               /* Teal */
   --chart-3: oklch(0.72 0.18 350);               /* Coral */
-  --chart-4: oklch(0.78 0.15 100);               /* Mint */
+  --chart-4: oklch(0.78 0.15 160);               /* Mint */
   --chart-5: oklch(0.7 0.18 50);                 /* Warm amber */
 
   --radius: 0.875rem;                            /* Slightly more rounded — friendlier */
 
-  /* Sidebar — soft white with indigo active state */
-  --sidebar: oklch(0.995 0.005 295);
-  --sidebar-foreground: oklch(0.4 0.04 270);
-  --sidebar-primary: oklch(0.61 0.21 280);
+  /* Sidebar — soft white with blue active state */
+  --sidebar: oklch(0.995 0.005 220);
+  --sidebar-foreground: oklch(0.4 0.04 235);
+  --sidebar-primary: oklch(0.58 0.19 250);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.03 290);
-  --sidebar-accent-foreground: oklch(0.37 0.13 280);
-  --sidebar-border: oklch(0.92 0.02 290);
-  --sidebar-ring: oklch(0.61 0.21 280);
+  --sidebar-accent: oklch(0.96 0.03 220);
+  --sidebar-accent-foreground: oklch(0.37 0.13 245);
+  --sidebar-border: oklch(0.92 0.02 220);
+  --sidebar-ring: oklch(0.58 0.19 250);
 }
 
 .dark {
-  /* Cosmic dark — deep indigo nights */
-  --background: oklch(0.16 0.04 270);
-  --foreground: oklch(0.97 0.01 280);
+  /* Ocean dark — deep navy nights */
+  --background: oklch(0.16 0.04 240);
+  --foreground: oklch(0.97 0.01 220);
 
-  --card: oklch(0.22 0.05 270);
-  --card-foreground: oklch(0.97 0.01 280);
+  --card: oklch(0.22 0.05 240);
+  --card-foreground: oklch(0.97 0.01 220);
 
-  --popover: oklch(0.22 0.05 270);
-  --popover-foreground: oklch(0.97 0.01 280);
+  --popover: oklch(0.22 0.05 240);
+  --popover-foreground: oklch(0.97 0.01 220);
 
-  --primary: oklch(0.7 0.2 280);
-  --primary-foreground: oklch(0.16 0.04 270);
+  --primary: oklch(0.68 0.18 250);
+  --primary-foreground: oklch(0.16 0.04 240);
 
-  --secondary: oklch(0.3 0.06 275);
-  --secondary-foreground: oklch(0.97 0.01 280);
+  --secondary: oklch(0.3 0.06 240);
+  --secondary-foreground: oklch(0.97 0.01 220);
 
-  --muted: oklch(0.3 0.06 275);
-  --muted-foreground: oklch(0.72 0.04 280);
+  --muted: oklch(0.3 0.06 240);
+  --muted-foreground: oklch(0.72 0.04 230);
 
-  --accent: oklch(0.35 0.12 220);
-  --accent-foreground: oklch(0.97 0.01 280);
+  --accent: oklch(0.35 0.12 200);
+  --accent-foreground: oklch(0.97 0.01 220);
 
   --destructive: oklch(0.72 0.19 22);
 
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0.2 280);
+  --ring: oklch(0.68 0.18 250);
 
-  --chart-1: oklch(0.7 0.2 280);
-  --chart-2: oklch(0.72 0.16 200);
+  --chart-1: oklch(0.68 0.18 250);
+  --chart-2: oklch(0.72 0.14 195);
   --chart-3: oklch(0.74 0.18 350);
-  --chart-4: oklch(0.8 0.15 100);
+  --chart-4: oklch(0.8 0.15 160);
   --chart-5: oklch(0.72 0.18 50);
 
-  --sidebar: oklch(0.22 0.05 270);
-  --sidebar-foreground: oklch(0.97 0.01 280);
-  --sidebar-primary: oklch(0.7 0.2 280);
-  --sidebar-primary-foreground: oklch(0.16 0.04 270);
-  --sidebar-accent: oklch(0.3 0.06 275);
-  --sidebar-accent-foreground: oklch(0.97 0.01 280);
+  --sidebar: oklch(0.22 0.05 240);
+  --sidebar-foreground: oklch(0.97 0.01 220);
+  --sidebar-primary: oklch(0.68 0.18 250);
+  --sidebar-primary-foreground: oklch(0.16 0.04 240);
+  --sidebar-accent: oklch(0.3 0.06 240);
+  --sidebar-accent-foreground: oklch(0.97 0.01 220);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.7 0.2 280);
+  --sidebar-ring: oklch(0.68 0.18 250);
 }
 
 @layer base {
@@ -164,10 +164,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Subtle cosmic gradient texture in background */
+    /* Subtle ocean gradient texture in background — blue → teal */
     background-image:
-      radial-gradient(ellipse at 0% 0%, oklch(0.96 0.05 290) 0%, transparent 50%),
-      radial-gradient(ellipse at 100% 100%, oklch(0.96 0.05 200) 0%, transparent 50%);
+      radial-gradient(ellipse at 0% 0%, oklch(0.96 0.05 240) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 100%, oklch(0.96 0.05 195) 0%, transparent 50%);
     background-attachment: fixed;
   }
   html {
