@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ChevronLeft, CheckCircle2, Upload, X } from "lucide-react";
 import { uploadFile, humanFileSize } from "@/lib/uploadFile";
+import { CATEGORY_TREE, genresFor, themesFor } from "@/lib/categories";
 
 interface Novel {
   id: string;
@@ -56,6 +57,11 @@ export default function NewStoryPage() {
   const [storyPrice, setStoryPrice] = useState("");
   const [fulfillmentType, setFulfillmentType] = useState<"digital" | "physical">("digital");
   const [published, setPublished] = useState(false);
+
+  // Category taxonomy
+  const [category, setCategory] = useState("");
+  const [genre, setGenre] = useState("");
+  const [theme, setTheme] = useState("");
 
   // Language & captions
   const [language, setLanguage] = useState("en");
@@ -142,6 +148,9 @@ export default function NewStoryPage() {
           language,
           subtitle_languages: subtitleLangs,
           caption_mode: captionMode,
+          category: category || null,
+          genre: genre || null,
+          theme: theme || null,
         })
         .select("id")
         .single();
@@ -187,13 +196,13 @@ export default function NewStoryPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <Link href="/stories" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="mr-1 h-4 w-4" /> Back to series
+        <ChevronLeft className="mr-1 h-4 w-4" /> Back to novels
       </Link>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Create Series</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Create Novel</h1>
         <p className="text-sm text-muted-foreground">
-          Add a new series under an existing novel — or start a fresh novel with it. Each series bundles a printed book + audio + AI visuals.
+          Add a new novel under an existing parent — or start a fresh parent. Each novel bundles a printed book + audio + AI visuals.
         </p>
       </div>
 
@@ -203,7 +212,7 @@ export default function NewStoryPage() {
 
       {saved && (
         <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-          <CheckCircle2 className="h-4 w-4" /> Series created · redirecting…
+          <CheckCircle2 className="h-4 w-4" /> Novel created · redirecting…
         </div>
       )}
 
@@ -281,15 +290,15 @@ export default function NewStoryPage() {
           </CardContent>
         </Card>
 
-        {/* Series */}
+        {/* Novel details */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">2. Series details</CardTitle>
+            <CardTitle className="text-base">2. Novel details</CardTitle>
             <CardDescription>What the customer buys — this bundle unlocks lifetime access + a printed book</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="storyTitle">Series title *</Label>
+              <Label htmlFor="storyTitle">Novel title *</Label>
               <Input
                 id="storyTitle"
                 value={storyTitle}
@@ -346,11 +355,75 @@ export default function NewStoryPage() {
           </CardContent>
         </Card>
 
+        {/* Category */}
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base">3. Category</CardTitle>
+            <CardDescription>Where this novel lives in the store & search — pick top → mid → leaf</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select
+                  value={category || "__none__"}
+                  onValueChange={(v) => {
+                    const val = v === "__none__" ? "" : v;
+                    setCategory(val); setGenre(""); setTheme("");
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="Pick a category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— None —</SelectItem>
+                    {CATEGORY_TREE.map((c) => (
+                      <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Genre</Label>
+                <Select
+                  value={genre || "__none__"}
+                  onValueChange={(v) => { const val = v === "__none__" ? "" : v; setGenre(val); setTheme(""); }}
+                  disabled={!category}
+                >
+                  <SelectTrigger><SelectValue placeholder={category ? "Pick a genre" : "Pick category first"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— None —</SelectItem>
+                    {genresFor(category).map((g) => (
+                      <SelectItem key={g.name} value={g.name}>{g.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Theme</Label>
+                <Select
+                  value={theme || "__none__"}
+                  onValueChange={(v) => setTheme(v === "__none__" ? "" : v)}
+                  disabled={!genre}
+                >
+                  <SelectTrigger><SelectValue placeholder={genre ? "Pick a theme" : "Pick genre first"} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— None —</SelectItem>
+                    {themesFor(category, genre).map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Language & captions */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">3. Language & captions</CardTitle>
-            <CardDescription>What the video file has baked in — audio narration + subtitles. App users see this series only when their flag matches.</CardDescription>
+            <CardTitle className="text-base">4. Language & captions</CardTitle>
+            <CardDescription>What the video file has baked in — audio narration + subtitles. App users see this series only when their flag matches this novel.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -410,8 +483,8 @@ export default function NewStoryPage() {
         {/* Optional chapter */}
         <Card className="rounded-2xl border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">4. First chapter (optional)</CardTitle>
-            <CardDescription>Add one now or add chapters later from the series detail page</CardDescription>
+            <CardTitle className="text-base">5. First chapter (optional)</CardTitle>
+            <CardDescription>Add one now or add chapters later from the novel detail page</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -449,7 +522,7 @@ export default function NewStoryPage() {
 
         <div className="flex gap-3">
           <Button type="submit" disabled={submitting}>
-            {submitting ? "Creating…" : "Create series"}
+            {submitting ? "Creating…" : "Create novel"}
           </Button>
           <Link href="/stories">
             <Button type="button" variant="outline">Cancel</Button>

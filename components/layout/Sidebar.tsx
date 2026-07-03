@@ -21,7 +21,7 @@ import {
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Users", href: "/users", icon: Users },
-  { label: "Series", href: "/stories", icon: BookOpen },
+  { label: "Novels", href: "/stories", icon: BookOpen },
   { label: "AI Studio", href: "/ai", icon: Sparkles },
   { label: "Orders", href: "/orders", icon: ShoppingCart },
   { label: "Shipments", href: "/shipments", icon: Truck },

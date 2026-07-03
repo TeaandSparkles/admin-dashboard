@@ -107,6 +107,22 @@ begin
 end $$;
 `;
 
+const CATEGORIES_SQL = `-- Category taxonomy for novels: category → genre → theme
+
+alter table public.stories
+  add column if not exists category text,
+  add column if not exists genre text,
+  add column if not exists theme text;
+
+comment on column public.stories.category is 'Top-level taxonomy (Fiction, Nonfiction, Poetry, Drama, Comics & Graphic Works, Educational, Reference & Professional, Special Formats)';
+comment on column public.stories.genre is 'Mid-level (e.g. Mystery, Fantasy, Cooking, Business)';
+comment on column public.stories.theme is 'Leaf-level (e.g. Cozy Mystery, Epic Fantasy, Baking, Marketing)';
+
+create index if not exists stories_category_idx on public.stories(category);
+create index if not exists stories_genre_idx on public.stories(genre);
+create index if not exists stories_theme_idx on public.stories(theme);
+`;
+
 const STORAGE_SQL = `-- Storage buckets for admin-uploaded media.
 -- covers = novel cover images (small, publicly readable)
 -- media  = chapter video files (larger, publicly readable so mobile can stream)
@@ -222,6 +238,43 @@ export default function SetupPage() {
             </summary>
             <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
               {LANGUAGES_SQL}
+            </pre>
+          </details>
+        </CardContent>
+      </Card>
+
+      {/* Migration 1b — Categories */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Database className="h-5 w-5 text-blue-600" />
+            Migration 1b — Category taxonomy
+          </CardTitle>
+          <CardDescription>
+            Adds <code className="text-xs">category</code>, <code className="text-xs">genre</code>,
+            and <code className="text-xs">theme</code> columns to <code className="text-xs">stories</code>.
+            Powers the Fiction → Mystery → Cozy Mystery style filters everywhere.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Button
+              className="gap-2 bg-teal-600 hover:bg-teal-700"
+              onClick={() => copySql("categories", CATEGORIES_SQL)}
+            >
+              {copied === "categories" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied === "categories" ? "Copied!" : "Copy SQL"}
+            </Button>
+            <a href={SUPABASE_SQL_URL} target="_blank" rel="noreferrer">
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" /> Open editor
+              </Button>
+            </a>
+          </div>
+          <details className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
+            <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
+              {CATEGORIES_SQL}
             </pre>
           </details>
         </CardContent>

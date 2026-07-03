@@ -10,7 +10,11 @@ export type Novel = Pick<
 export type Story = Pick<
   Database["public"]["Tables"]["stories"]["Row"],
   "id" | "novel_id" | "title" | "order_index" | "created_at" | "published" | "story_price" | "fulfillment_type"
->;
+> & {
+  category?: string | null;
+  genre?: string | null;
+  theme?: string | null;
+};
 
 export type Chapter = Pick<
   Database["public"]["Tables"]["chapters"]["Row"],
@@ -48,7 +52,7 @@ export function useStories(): UseStoriesResult {
           .order("created_at", { ascending: false }),
         supabase
           .from("stories")
-          .select("id, novel_id, title, order_index, created_at, published, story_price, fulfillment_type")
+          .select("id, novel_id, title, order_index, created_at, published, story_price, fulfillment_type, category, genre, theme")
           .order("order_index", { ascending: true }),
         supabase
           .from("chapters")

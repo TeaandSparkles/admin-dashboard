@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { uploadFile, humanFileSize } from "@/lib/uploadFile";
+import { CATEGORY_TREE, genresFor, themesFor } from "@/lib/categories";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,9 @@ interface Story {
   language: string;
   subtitle_languages: string[];
   caption_mode: string;
+  category: string | null;
+  genre: string | null;
+  theme: string | null;
 }
 
 interface Novel {
@@ -84,7 +88,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
       setLoading(true);
       const { data: s, error: sErr } = await supabase
         .from("stories")
-        .select("id, novel_id, title, description, story_price, fulfillment_type, published, language, subtitle_languages, caption_mode")
+        .select("id, novel_id, title, description, story_price, fulfillment_type, published, language, subtitle_languages, caption_mode, category, genre, theme")
         .eq("id", id)
         .single();
       if (sErr) { setError(sErr.message); setLoading(false); return; }
@@ -137,6 +141,9 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
           language: story.language,
           subtitle_languages: story.subtitle_languages,
           caption_mode: story.caption_mode,
+          category: story.category,
+          genre: story.genre,
+          theme: story.theme,
         })
         .eq("id", story.id);
       if (uErr) throw uErr;
@@ -211,14 +218,14 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
   }
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading…</p>;
-  if (!story) return <p className="text-sm text-red-500">{error ?? "Series not found"}</p>;
+  if (!story) return <p className="text-sm text-red-500">{error ?? "Novel not found"}</p>;
 
   const langLabel = LANGUAGE_OPTIONS.find((l) => l.code === story.language);
 
   return (
     <div className="space-y-6 max-w-3xl">
       <Link href="/stories" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="mr-1 h-4 w-4" /> Back to series
+        <ChevronLeft className="mr-1 h-4 w-4" /> Back to novels
       </Link>
 
       <div className="flex items-start justify-between gap-4">
@@ -274,14 +281,14 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
         </Card>
       )}
 
-      {/* Series details */}
+      {/* Novel details */}
       <Card className="rounded-2xl border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">Series details</CardTitle>
+          <CardTitle className="text-base">Novel details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Series title *</Label>
+            <Label>Novel title *</Label>
             <Input value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} />
           </div>
           <div className="space-y-2">
@@ -327,6 +334,71 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
             />
             <span className="text-sm">Publish (visible in mobile app)</span>
           </label>
+        </CardContent>
+      </Card>
+
+      {/* Category */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base">Category</CardTitle>
+          <CardDescription>Where this novel lives in the store & search</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select
+                value={story.category || "__none__"}
+                onValueChange={(v) => {
+                  const val = v === "__none__" ? null : v;
+                  setStory({ ...story, category: val, genre: null, theme: null });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Pick" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">— None —</SelectItem>
+                  {CATEGORY_TREE.map((c) => (
+                    <SelectItem key={c.name} value={c.name}>{c.emoji} {c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Genre</Label>
+              <Select
+                value={story.genre || "__none__"}
+                onValueChange={(v) => {
+                  const val = v === "__none__" ? null : v;
+                  setStory({ ...story, genre: val, theme: null });
+                }}
+                disabled={!story.category}
+              >
+                <SelectTrigger><SelectValue placeholder={story.category ? "Pick" : "Pick category first"} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">— None —</SelectItem>
+                  {genresFor(story.category ?? "").map((g) => (
+                    <SelectItem key={g.name} value={g.name}>{g.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Theme</Label>
+              <Select
+                value={story.theme || "__none__"}
+                onValueChange={(v) => setStory({ ...story, theme: v === "__none__" ? null : v })}
+                disabled={!story.genre}
+              >
+                <SelectTrigger><SelectValue placeholder={story.genre ? "Pick" : "Pick genre first"} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">— None —</SelectItem>
+                  {themesFor(story.category ?? "", story.genre ?? "").map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
