@@ -122,3 +122,91 @@ export function themesFor(categoryName: string, genreName: string): string[] {
 export function categoryEmoji(name: string): string {
   return CATEGORY_TREE.find((c) => c.name === name)?.emoji ?? "📚";
 }
+
+// Curated, specific themes users actually browse for — used as pills on the
+// mobile home screen and quick-filter chips in the admin. Order = popularity.
+// Match on theme first, then genre (theme falls back to genre if not set).
+export interface Pill {
+  label: string;
+  emoji: string;
+  match: { theme?: string; genre?: string };
+}
+
+export const CURATED_PILLS: Pill[] = [
+  // Kids & family (front and center for this brand)
+  { label: "Bedtime Stories", emoji: "🌙", match: { theme: "Bedtime Stories" } },
+  { label: "Fairy Tales", emoji: "🧚", match: { theme: "Fairy Tales" } },
+  { label: "Fables", emoji: "🦊", match: { theme: "Fables" } },
+  { label: "Animal Stories", emoji: "🐰", match: { theme: "Animal Stories" } },
+  { label: "Picture Books", emoji: "🖼️", match: { theme: "Picture Books" } },
+  { label: "Chapter Books", emoji: "📖", match: { theme: "Chapter Books" } },
+  { label: "Educational Stories", emoji: "🎓", match: { theme: "Educational Stories" } },
+
+  // Fantasy & adventure
+  { label: "Epic Fantasy", emoji: "🗡️", match: { theme: "Epic Fantasy" } },
+  { label: "Dragon Fantasy", emoji: "🐉", match: { theme: "Dragon Fantasy" } },
+  { label: "Fairy Tale Retelling", emoji: "✨", match: { theme: "Fairy Tale Retelling" } },
+  { label: "Mythic Fantasy", emoji: "🏛️", match: { theme: "Mythic Fantasy" } },
+  { label: "Sword & Sorcery", emoji: "⚔️", match: { theme: "Sword & Sorcery" } },
+  { label: "Adventure", emoji: "🧭", match: { theme: "Adventure" } },
+  { label: "Treasure Hunt", emoji: "💎", match: { theme: "Treasure Hunt" } },
+  { label: "Sea Adventure", emoji: "⛵", match: { theme: "Sea Adventure" } },
+
+  // Sci-fi
+  { label: "Space Opera", emoji: "🚀", match: { theme: "Space Opera" } },
+  { label: "Space Exploration", emoji: "🪐", match: { theme: "Space Exploration" } },
+  { label: "Time Travel", emoji: "⏳", match: { theme: "Time Travel" } },
+  { label: "Cyberpunk", emoji: "🤖", match: { theme: "Cyberpunk" } },
+  { label: "Post-Apocalyptic", emoji: "☢️", match: { theme: "Post-Apocalyptic" } },
+
+  // Mystery & thriller
+  { label: "Cozy Mystery", emoji: "🫖", match: { theme: "Cozy Mystery" } },
+  { label: "Detective Fiction", emoji: "🔍", match: { theme: "Detective Fiction" } },
+  { label: "Amateur Sleuth", emoji: "🕵️", match: { theme: "Amateur Sleuth" } },
+  { label: "Spy Thriller", emoji: "🎩", match: { theme: "Spy Thriller" } },
+
+  // Romance
+  { label: "Contemporary Romance", emoji: "💗", match: { theme: "Contemporary Romance" } },
+  { label: "Historical Romance", emoji: "🎀", match: { theme: "Historical Romance" } },
+  { label: "Small Town Romance", emoji: "🏘️", match: { theme: "Small Town Romance" } },
+  { label: "Fantasy Romance", emoji: "🦄", match: { theme: "Fantasy Romance" } },
+  { label: "Clean Romance", emoji: "🌷", match: { theme: "Clean Romance" } },
+  { label: "Christian Romance", emoji: "🕊️", match: { theme: "Christian Romance" } },
+
+  // Historical
+  { label: "Ancient History", emoji: "🏺", match: { theme: "Ancient History" } },
+  { label: "Medieval", emoji: "🏰", match: { theme: "Medieval" } },
+  { label: "Biblical", emoji: "📜", match: { theme: "Biblical" } },
+  { label: "Victorian", emoji: "🎩", match: { theme: "Victorian" } },
+
+  // Slice of life
+  { label: "Family Saga", emoji: "👨‍👩‍👧", match: { theme: "Family Saga" } },
+  { label: "Family Drama", emoji: "🎭", match: { theme: "Family Drama" } },
+  { label: "Comic Fantasy", emoji: "😄", match: { theme: "Comic Fantasy" } },
+  { label: "Satire", emoji: "🎪", match: { theme: "Satire" } },
+
+  // Nonfiction / lifestyle
+  { label: "Biography", emoji: "👤", match: { theme: "Biography" } },
+  { label: "Motivation", emoji: "🔥", match: { theme: "Motivation" } },
+  { label: "Habits", emoji: "📈", match: { theme: "Habits" } },
+  { label: "Cookbooks", emoji: "🍳", match: { theme: "Cookbooks" } },
+  { label: "Baking", emoji: "🧁", match: { theme: "Baking" } },
+  { label: "Gardening", emoji: "🌻", match: { theme: "Gardening" } },
+  { label: "Astronomy", emoji: "🔭", match: { theme: "Astronomy" } },
+  { label: "Wildlife", emoji: "🦁", match: { theme: "Wildlife" } },
+  { label: "Photography", emoji: "📷", match: { theme: "Photography" } },
+  { label: "Spiritual Growth", emoji: "🕉️", match: { theme: "Spiritual Growth" } },
+  { label: "Christianity", emoji: "✝️", match: { theme: "Christianity" } },
+];
+
+/** Does a story with these tags match the given pill? */
+export function storyMatchesPill(
+  storyCategory: string | null | undefined,
+  storyGenre: string | null | undefined,
+  storyTheme: string | null | undefined,
+  pill: Pill,
+): boolean {
+  if (pill.match.theme && storyTheme === pill.match.theme) return true;
+  if (pill.match.genre && storyGenre === pill.match.genre) return true;
+  return false;
+}
