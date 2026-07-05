@@ -55,6 +55,7 @@ export default function NewStoryPage() {
   const [storyTitle, setStoryTitle] = useState("");
   const [storyDesc, setStoryDesc] = useState("");
   const [storyPrice, setStoryPrice] = useState("");
+  const [freeChapters, setFreeChapters] = useState<string>("0");
   const [fulfillmentType, setFulfillmentType] = useState<"digital" | "physical">("digital");
   const [published, setPublished] = useState(false);
 
@@ -145,6 +146,7 @@ export default function NewStoryPage() {
           story_price: storyPrice ? Number(storyPrice) : null,
           fulfillment_type: fulfillmentType,
           published,
+          free_chapters: Math.max(0, parseInt(freeChapters || "0", 10) || 0),
           language,
           subtitle_languages: subtitleLangs,
           caption_mode: captionMode,
@@ -342,6 +344,23 @@ export default function NewStoryPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="freeChapters">Free chapters</Label>
+              <Input
+                id="freeChapters"
+                type="number"
+                min="0"
+                step="1"
+                value={freeChapters}
+                onChange={(e) => setFreeChapters(e.target.value)}
+                placeholder="0"
+                className="max-w-[140px]"
+              />
+              <p className="text-xs text-muted-foreground">
+                Users play the first <b>{Math.max(0, parseInt(freeChapters || "0", 10) || 0)}</b>{" "}
+                chapter{Math.max(0, parseInt(freeChapters || "0", 10) || 0) === 1 ? "" : "s"} without buying. Set to 0 for no free preview.
+              </p>
             </div>
             <label className="flex cursor-pointer items-center gap-2">
               <input

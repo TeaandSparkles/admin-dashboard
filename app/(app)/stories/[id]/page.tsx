@@ -42,6 +42,7 @@ interface Story {
   story_price: number | null;
   fulfillment_type: string | null;
   published: boolean | null;
+  free_chapters: number | null;
   language: string;
   subtitle_languages: string[];
   caption_mode: string;
@@ -88,7 +89,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
       setLoading(true);
       const { data: s, error: sErr } = await supabase
         .from("stories")
-        .select("id, novel_id, title, description, story_price, fulfillment_type, published, language, subtitle_languages, caption_mode, category, genre, theme")
+        .select("id, novel_id, title, description, story_price, fulfillment_type, published, free_chapters, language, subtitle_languages, caption_mode, category, genre, theme")
         .eq("id", id)
         .single();
       if (sErr) { setError(sErr.message); setLoading(false); return; }
@@ -138,6 +139,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
           story_price: story.story_price,
           fulfillment_type: story.fulfillment_type,
           published: story.published,
+          free_chapters: story.free_chapters ?? 0,
           language: story.language,
           subtitle_languages: story.subtitle_languages,
           caption_mode: story.caption_mode,
@@ -324,6 +326,24 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Free chapters</Label>
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              value={story.free_chapters ?? 0}
+              onChange={(e) =>
+                setStory({ ...story, free_chapters: e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0) })
+              }
+              placeholder="0"
+              className="max-w-[140px]"
+            />
+            <p className="text-xs text-muted-foreground">
+              Users play the first <b>{story.free_chapters ?? 0}</b>{" "}
+              chapter{(story.free_chapters ?? 0) === 1 ? "" : "s"} without buying. Set to 0 for no free preview.
+            </p>
           </div>
           <label className="flex cursor-pointer items-center gap-2">
             <input
