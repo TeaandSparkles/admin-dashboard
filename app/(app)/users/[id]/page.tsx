@@ -14,7 +14,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, CheckCircle2, BookOpen, Trash2, Plus } from "lucide-react";
+import { ChevronLeft, CheckCircle2, BookOpen, Check, X, Search } from "lucide-react";
 
 interface UserDetail {
   id: string;
@@ -70,8 +70,8 @@ export default function UserDetailPage({
   const [coins, setCoins] = useState<CoinTx[]>([]);
   const [access, setAccess] = useState<AccessRow[]>([]);
   const [allNovels, setAllNovels] = useState<NovelOption[]>([]);
-  const [novelToGrant, setNovelToGrant] = useState<string>("");
-  const [accessType, setAccessType] = useState<"admin_grant" | "gift" | "free">("admin_grant");
+  const [novelSearch, setNovelSearch] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [form, setForm] = useState({ role: "user", username: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,35 +127,35 @@ export default function UserDetailPage({
     fetchAll();
   }, [id]);
 
-  async function handleGrantAccess() {
-    if (!novelToGrant) return;
+  async function toggleAccess(novel: NovelOption) {
     setError(null);
-    const { data, error: err } = await supabase
-      .from("story_access")
-      .insert({
-        user_id: id,
-        story_id: novelToGrant,
-        access_type: accessType,
-      })
-      .select("id, story_id, access_type, created_at, story:stories(title, language)")
-      .single();
-    if (err) {
-      setError(err.message);
-      return;
+    setTogglingId(novel.id);
+    const existing = access.find((a) => a.story_id === novel.id);
+    try {
+      if (existing) {
+        // Currently enabled → disable (delete row)
+        const { error: err } = await supabase.from("story_access").delete().eq("id", existing.id);
+        if (err) throw err;
+        setAccess((prev) => prev.filter((a) => a.id !== existing.id));
+      } else {
+        // Currently disabled → enable (insert row)
+        const { data, error: err } = await supabase
+          .from("story_access")
+          .insert({
+            user_id: id,
+            story_id: novel.id,
+            access_type: "admin_grant",
+          })
+          .select("id, story_id, access_type, created_at, story:stories(title, language)")
+          .single();
+        if (err) throw err;
+        setAccess((prev) => [data as unknown as AccessRow, ...prev]);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setTogglingId(null);
     }
-    setAccess((prev) => [data as unknown as AccessRow, ...prev]);
-    setNovelToGrant("");
-  }
-
-  async function handleRevokeAccess(accessId: string) {
-    if (!confirm("Revoke access to this novel? User will no longer be able to play chapters.")) return;
-    setError(null);
-    const { error: err } = await supabase.from("story_access").delete().eq("id", accessId);
-    if (err) {
-      setError(err.message);
-      return;
-    }
-    setAccess((prev) => prev.filter((a) => a.id !== accessId));
   }
 
   async function handleSave() {
@@ -284,101 +284,95 @@ export default function UserDetailPage({
         </Card>
       </div>
 
-      {/* Novel access — grant / revoke */}
+      {/* Novel access — enable / disable per novel */}
       <Card className="rounded-2xl border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <BookOpen className="h-4 w-4 text-blue-600" />
-            Novel access ({access.length})
+            Novel access ({access.length} of {allNovels.length} enabled)
           </CardTitle>
           <CardDescription>
-            Grant a novel to unlock it for this user without a purchase. Revoke to disable.
+            Tap Enable to unlock a novel for this user (no purchase needed). Tap Disable to take it away.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Grant form */}
-          <div className="rounded-xl border border-dashed border-gray-200 p-4 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Grant access</p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto]">
-              <Select value={novelToGrant} onValueChange={(v) => v && setNovelToGrant(v)}>
-                <SelectTrigger><SelectValue placeholder="Pick a novel to grant" /></SelectTrigger>
-                <SelectContent>
-                  {allNovels
-                    .filter((n) => !access.some((a) => a.story_id === n.id))
-                    .map((n) => (
-                      <SelectItem key={n.id} value={n.id}>
-                        {n.language ? `${n.language.toUpperCase()} · ` : ""}{n.title}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <Select value={accessType} onValueChange={(v) => v && setAccessType(v as typeof accessType)}>
-                <SelectTrigger className="sm:w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin_grant">Admin grant</SelectItem>
-                  <SelectItem value="gift">Gift</SelectItem>
-                  <SelectItem value="free">Free</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={handleGrantAccess}
-                disabled={!novelToGrant}
-                className="gap-1 bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" /> Grant
-              </Button>
-            </div>
+        <CardContent className="space-y-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              value={novelSearch}
+              onChange={(e) => setNovelSearch(e.target.value)}
+              placeholder="Search novels…"
+              className="pl-9"
+            />
           </div>
 
-          {/* Access list */}
-          <Table>
-            <TableHeader>
-              <TableRow className="border-gray-100">
-                <TableHead>Novel</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Granted</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {access.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
-                    No novels granted yet
-                  </TableCell>
-                </TableRow>
-              ) : (
-                access.map((a) => (
-                  <TableRow key={a.id} className="border-gray-50">
-                    <TableCell className="font-medium">
-                      {a.story?.language && (
-                        <span className="mr-2 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700">
-                          {a.story.language}
-                        </span>
+          {/* Novel rows */}
+          <div className="space-y-2 max-h-[520px] overflow-auto pr-1">
+            {allNovels.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4 text-center">No published novels yet.</p>
+            )}
+            {allNovels
+              .filter((n) =>
+                novelSearch.trim() === ""
+                  ? true
+                  : n.title.toLowerCase().includes(novelSearch.trim().toLowerCase())
+              )
+              // Sort: enabled first, then by title
+              .sort((a, b) => {
+                const aOn = access.some((x) => x.story_id === a.id) ? 0 : 1;
+                const bOn = access.some((x) => x.story_id === b.id) ? 0 : 1;
+                if (aOn !== bOn) return aOn - bOn;
+                return a.title.localeCompare(b.title);
+              })
+              .map((novel) => {
+                const enabled = access.some((a) => a.story_id === novel.id);
+                const busy = togglingId === novel.id;
+                return (
+                  <div
+                    key={novel.id}
+                    className={`flex items-center gap-3 rounded-xl border p-3 transition ${
+                      enabled ? "border-green-200 bg-green-50/60" : "border-gray-200 bg-white"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        {novel.language && (
+                          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700">
+                            {novel.language}
+                          </span>
+                        )}
+                        <p className="truncate text-sm font-medium">{novel.title}</p>
+                      </div>
+                      {enabled && (
+                        <p className="mt-0.5 text-[11px] text-green-700">
+                          ✓ Enabled — user can play these chapters
+                        </p>
                       )}
-                      {a.story?.title ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{a.access_type ?? "—"}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {a.created_at ? new Date(a.created_at).toLocaleDateString() : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRevokeAccess(a.id)}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" /> Revoke
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => toggleAccess(novel)}
+                      disabled={busy}
+                      size="sm"
+                      className={
+                        enabled
+                          ? "gap-1 bg-red-500 hover:bg-red-600 text-white"
+                          : "gap-1 bg-green-600 hover:bg-green-700 text-white"
+                      }
+                    >
+                      {busy ? (
+                        "…"
+                      ) : enabled ? (
+                        <><X className="h-4 w-4" /> Disable</>
+                      ) : (
+                        <><Check className="h-4 w-4" /> Enable</>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+          </div>
         </CardContent>
       </Card>
 
