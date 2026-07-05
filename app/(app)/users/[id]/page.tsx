@@ -14,7 +14,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ChevronLeft, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, CheckCircle2, BookOpen, Trash2, Plus } from "lucide-react";
 
 interface UserDetail {
   id: string;
@@ -45,6 +45,20 @@ interface CoinTx {
   created_at: string | null;
 }
 
+interface AccessRow {
+  id: string;
+  story_id: string;
+  access_type: string | null;
+  created_at: string | null;
+  story: { title: string; language: string | null } | null;
+}
+
+interface NovelOption {
+  id: string;
+  title: string;
+  language: string | null;
+}
+
 export default function UserDetailPage({
   params,
 }: {
@@ -54,6 +68,10 @@ export default function UserDetailPage({
   const [user, setUser] = useState<UserDetail | null>(null);
   const [orders, setOrders] = useState<UserOrder[]>([]);
   const [coins, setCoins] = useState<CoinTx[]>([]);
+  const [access, setAccess] = useState<AccessRow[]>([]);
+  const [allNovels, setAllNovels] = useState<NovelOption[]>([]);
+  const [novelToGrant, setNovelToGrant] = useState<string>("");
+  const [accessType, setAccessType] = useState<"admin_grant" | "gift" | "free">("admin_grant");
   const [form, setForm] = useState({ role: "user", username: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,7 +81,7 @@ export default function UserDetailPage({
   useEffect(() => {
     async function fetchAll() {
       setLoading(true);
-      const [userRes, ordersRes, coinsRes] = await Promise.all([
+      const [userRes, ordersRes, coinsRes, accessRes, novelsRes] = await Promise.all([
         supabase
           .from("users")
           .select(
@@ -81,6 +99,16 @@ export default function UserDetailPage({
           .select("id, amount, reason, created_at")
           .eq("user_id", id)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("story_access")
+          .select("id, story_id, access_type, created_at, story:stories(title, language)")
+          .eq("user_id", id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("stories")
+          .select("id, title, language")
+          .eq("published", true)
+          .order("title"),
       ]);
 
       if (userRes.error) setError(userRes.error.message);
@@ -92,10 +120,43 @@ export default function UserDetailPage({
 
       setOrders((ordersRes.data as unknown as UserOrder[]) ?? []);
       setCoins((coinsRes.data as unknown as CoinTx[]) ?? []);
+      setAccess((accessRes.data as unknown as AccessRow[]) ?? []);
+      setAllNovels((novelsRes.data as unknown as NovelOption[]) ?? []);
       setLoading(false);
     }
     fetchAll();
   }, [id]);
+
+  async function handleGrantAccess() {
+    if (!novelToGrant) return;
+    setError(null);
+    const { data, error: err } = await supabase
+      .from("story_access")
+      .insert({
+        user_id: id,
+        story_id: novelToGrant,
+        access_type: accessType,
+      })
+      .select("id, story_id, access_type, created_at, story:stories(title, language)")
+      .single();
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setAccess((prev) => [data as unknown as AccessRow, ...prev]);
+    setNovelToGrant("");
+  }
+
+  async function handleRevokeAccess(accessId: string) {
+    if (!confirm("Revoke access to this novel? User will no longer be able to play chapters.")) return;
+    setError(null);
+    const { error: err } = await supabase.from("story_access").delete().eq("id", accessId);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setAccess((prev) => prev.filter((a) => a.id !== accessId));
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -222,6 +283,104 @@ export default function UserDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Novel access — grant / revoke */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BookOpen className="h-4 w-4 text-blue-600" />
+            Novel access ({access.length})
+          </CardTitle>
+          <CardDescription>
+            Grant a novel to unlock it for this user without a purchase. Revoke to disable.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Grant form */}
+          <div className="rounded-xl border border-dashed border-gray-200 p-4 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Grant access</p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto]">
+              <Select value={novelToGrant} onValueChange={(v) => v && setNovelToGrant(v)}>
+                <SelectTrigger><SelectValue placeholder="Pick a novel to grant" /></SelectTrigger>
+                <SelectContent>
+                  {allNovels
+                    .filter((n) => !access.some((a) => a.story_id === n.id))
+                    .map((n) => (
+                      <SelectItem key={n.id} value={n.id}>
+                        {n.language ? `${n.language.toUpperCase()} · ` : ""}{n.title}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Select value={accessType} onValueChange={(v) => v && setAccessType(v as typeof accessType)}>
+                <SelectTrigger className="sm:w-40"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin_grant">Admin grant</SelectItem>
+                  <SelectItem value="gift">Gift</SelectItem>
+                  <SelectItem value="free">Free</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleGrantAccess}
+                disabled={!novelToGrant}
+                className="gap-1 bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4" /> Grant
+              </Button>
+            </div>
+          </div>
+
+          {/* Access list */}
+          <Table>
+            <TableHeader>
+              <TableRow className="border-gray-100">
+                <TableHead>Novel</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Granted</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {access.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                    No novels granted yet
+                  </TableCell>
+                </TableRow>
+              ) : (
+                access.map((a) => (
+                  <TableRow key={a.id} className="border-gray-50">
+                    <TableCell className="font-medium">
+                      {a.story?.language && (
+                        <span className="mr-2 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-700">
+                          {a.story.language}
+                        </span>
+                      )}
+                      {a.story?.title ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{a.access_type ?? "—"}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {a.created_at ? new Date(a.created_at).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRevokeAccess(a.id)}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" /> Revoke
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Orders */}
       <Card className="rounded-2xl border-0 shadow-sm">
