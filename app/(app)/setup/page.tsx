@@ -123,6 +123,37 @@ create index if not exists stories_genre_idx on public.stories(genre);
 create index if not exists stories_theme_idx on public.stories(theme);
 `;
 
+const SITE_CONTENT_SQL = `-- Editable Contact / Terms / Privacy / Feedback pages
+-- Admin can edit these live at /content/[key]. Public app reads via RLS select.
+
+create table if not exists public.site_content (
+  key text primary key,
+  title text not null default '',
+  body text not null default '',
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id)
+);
+
+insert into public.site_content (key, title, body)
+values
+  ('contact', 'Contact Us', 'Reach us at hello@starshipstorytime.com — we usually reply within one business day.'),
+  ('terms', 'Terms of Service', 'By using Starship StoryTime you agree to these terms. Full text pending.'),
+  ('privacy', 'Privacy Policy', 'We take family privacy seriously. Full policy pending.'),
+  ('feedback', 'Feedback', 'Tell us what you loved and what we can make better. Reply to any account email or write to feedback@starshipstorytime.com.')
+on conflict (key) do nothing;
+
+alter table public.site_content enable row level security;
+
+drop policy if exists site_content_read on public.site_content;
+create policy site_content_read on public.site_content
+  for select using (true);
+
+drop policy if exists site_content_write on public.site_content;
+create policy site_content_write on public.site_content
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+`;
+
 const FREE_CHAPTERS_SQL = `-- Per-novel free chapter count.
 -- Users can play the first N chapters without purchasing.
 
@@ -286,6 +317,43 @@ export default function SetupPage() {
             <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
             <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
               {CATEGORIES_SQL}
+            </pre>
+          </details>
+        </CardContent>
+      </Card>
+
+      {/* Migration 1d — Site content */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Database className="h-5 w-5 text-blue-600" />
+            Migration 1d — Editable Content pages
+          </CardTitle>
+          <CardDescription>
+            Creates <code className="text-xs">site_content</code> table for the Contact / Terms /
+            Privacy / Feedback pages you can edit from the sidebar under Content. Seeds them with
+            starter text so the editor is never empty.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Button
+              className="gap-2 bg-teal-600 hover:bg-teal-700"
+              onClick={() => copySql("site_content", SITE_CONTENT_SQL)}
+            >
+              {copied === "site_content" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied === "site_content" ? "Copied!" : "Copy SQL"}
+            </Button>
+            <a href={SUPABASE_SQL_URL} target="_blank" rel="noreferrer">
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" /> Open editor
+              </Button>
+            </a>
+          </div>
+          <details className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
+            <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
+              {SITE_CONTENT_SQL}
             </pre>
           </details>
         </CardContent>

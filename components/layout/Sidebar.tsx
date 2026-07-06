@@ -22,6 +22,9 @@ import {
   Package,
   Crown,
   FolderTree,
+  MessageSquare,
+  FileText,
+  MailQuestion,
   LucideIcon,
 } from "lucide-react";
 
@@ -60,6 +63,15 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Novel Categories", href: "/novel-categories", icon: FolderTree },
       { label: "Book List", href: "/stories", icon: BookOpen },
       { label: "Episodes / Videos", href: "/episodes", icon: Video },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { label: "Contact Us", href: "/content/contact", icon: MessageSquare },
+      { label: "Terms of Service", href: "/content/terms", icon: FileText },
+      { label: "Privacy Policy", href: "/content/privacy", icon: Shield },
+      { label: "Feedback", href: "/content/feedback", icon: MailQuestion },
     ],
   },
   {
