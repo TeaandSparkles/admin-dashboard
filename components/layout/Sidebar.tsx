@@ -9,26 +9,82 @@ import {
   Users,
   BookOpen,
   ShoppingCart,
-  Truck,
   Sparkles,
-  Bell,
   Settings,
   LogOut,
-  Flame,
   Database,
+  DollarSign,
+  Coins,
+  BarChart3,
+  Video,
+  Shield,
+  Languages,
+  Package,
+  Crown,
+  FolderTree,
+  LucideIcon,
 } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Users", href: "/users", icon: Users },
-  { label: "Novels", href: "/stories", icon: BookOpen },
-  { label: "AI Studio", href: "/ai", icon: Sparkles },
-  { label: "Orders", href: "/orders", icon: ShoppingCart },
-  { label: "Shipments", href: "/shipments", icon: Truck },
-  { label: "Listening Streaks", href: "/streaks", icon: Flame },
-  { label: "Notifications", href: "/notifications", icon: Bell },
-  { label: "Setup / SQL", href: "/setup", icon: Database },
-  { label: "Settings", href: "/settings", icon: Settings },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: "Dashboard",
+    items: [{ label: "Overview", href: "/dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Users",
+    items: [{ label: "User Management", href: "/users", icon: Users }],
+  },
+  {
+    label: "Admin",
+    items: [
+      { label: "Monetization", href: "/monetization", icon: DollarSign },
+      { label: "Coins Economy", href: "/coins", icon: Coins },
+      { label: "Novels Analytics", href: "/analytics/novels", icon: BarChart3 },
+      { label: "Episodes Analytics", href: "/analytics/episodes", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Books Management",
+    items: [
+      { label: "Novel Categories", href: "/novel-categories", icon: FolderTree },
+      { label: "Book List", href: "/stories", icon: BookOpen },
+      { label: "Episodes / Videos", href: "/episodes", icon: Video },
+    ],
+  },
+  {
+    label: "Staff Management",
+    items: [{ label: "Staff Users", href: "/staff", icon: Shield }],
+  },
+  {
+    label: "Language Management",
+    items: [{ label: "Language Book Lists", href: "/languages", icon: Languages }],
+  },
+  {
+    label: "Packages",
+    items: [
+      { label: "Novel Plan", href: "/plans/novels", icon: Package },
+      { label: "VIP Plan", href: "/plans/vip", icon: Crown },
+      { label: "Order History", href: "/orders", icon: ShoppingCart },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { label: "Setup / SQL", href: "/setup", icon: Database },
+      { label: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
 ];
 
 export default function Sidebar() {
@@ -41,10 +97,10 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-6">
+    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       {/* Brand */}
-      <div className="mb-8 px-3">
-        <div className="flex items-center gap-2">
+      <div className="px-3 py-5">
+        <div className="flex items-center gap-2 px-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-400 shadow-md">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
@@ -57,44 +113,55 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex flex-1 flex-col gap-1">
-        {navItems.map(({ label, href, icon: Icon }) => {
-          const active =
-            href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
-                active
-                  ? "bg-gradient-to-r from-blue-500/15 to-teal-400/10 text-blue-700 shadow-sm ring-1 ring-blue-200/50"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <Icon
-                className={cn(
-                  "h-4 w-4 shrink-0 transition-colors",
-                  active ? "text-blue-600" : "text-sidebar-foreground/60"
-                )}
-              />
-              {label}
-            </Link>
-          );
-        })}
+      {/* Nav — scrollable so sections all fit */}
+      <nav className="flex-1 overflow-y-auto px-3 pb-3">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label} className="mb-3">
+            <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/50">
+              {section.label}
+            </p>
+            <div className="flex flex-col gap-1">
+              {section.items.map(({ label, href, icon: Icon }) => {
+                const active =
+                  href === "/dashboard"
+                    ? pathname === "/dashboard"
+                    : pathname === href || pathname.startsWith(href + "/");
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all",
+                      active
+                        ? "bg-gradient-to-r from-blue-500/15 to-teal-400/10 text-blue-700 shadow-sm ring-1 ring-blue-200/50"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        active ? "text-blue-600" : "text-sidebar-foreground/60"
+                      )}
+                    />
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Sign out */}
-      <button
-        onClick={handleSignOut}
-        className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-sidebar-foreground/60 transition-colors hover:bg-rose-50 hover:text-rose-600"
-      >
-        <LogOut className="h-4 w-4 shrink-0" />
-        Sign out
-      </button>
+      {/* Sign out (always at the bottom) */}
+      <div className="border-t border-sidebar-border px-3 py-3">
+        <button
+          onClick={handleSignOut}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-sidebar-foreground/60 transition-colors hover:bg-rose-50 hover:text-rose-600"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          Logout
+        </button>
+      </div>
     </aside>
   );
 }
