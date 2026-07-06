@@ -123,6 +123,73 @@ create index if not exists stories_genre_idx on public.stories(genre);
 create index if not exists stories_theme_idx on public.stories(theme);
 `;
 
+const AUTO_EMAIL_SQL = `-- Auto-emails: editable templates + send log.
+
+create table if not exists public.email_templates (
+  key text primary key,
+  subject text not null default '',
+  html_body text not null default '',
+  text_body text not null default '',
+  from_name text not null default 'Starship StoryTime',
+  from_email text not null default 'hello@starshipstorytime.com',
+  enabled boolean not null default true,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id)
+);
+
+create table if not exists public.email_sends (
+  id uuid primary key default gen_random_uuid(),
+  template_key text not null,
+  to_email text not null,
+  subject text,
+  status text not null default 'pending',
+  provider_id text,
+  error text,
+  variables jsonb,
+  sent_at timestamptz not null default now()
+);
+create index if not exists email_sends_recent_idx on public.email_sends(sent_at desc);
+create index if not exists email_sends_status_idx on public.email_sends(status);
+
+insert into public.email_templates (key, subject, html_body, text_body) values
+  ('welcome', '🚀 Welcome to Starship StoryTime',
+    '<p>Hi {{user_name}},</p><p>Thanks for joining! Open the app to start your first story.</p>',
+    'Hi {{user_name}},\\n\\nThanks for joining! Open the app to start your first story.'),
+  ('order_confirmation', '✨ Order confirmed: {{novel_title}}',
+    '<p>Hi {{user_name}},</p><p>We received your order for <b>{{novel_title}}</b> ({{amount}}).</p><p>Order ID: {{order_id}}</p>',
+    'Hi {{user_name}},\\n\\nWe received your order for {{novel_title}} ({{amount}}).\\n\\nOrder ID: {{order_id}}'),
+  ('payment_received', '💳 Payment received',
+    '<p>Hi {{user_name}},</p><p>Payment of {{amount}} received. Thank you!</p>',
+    'Hi {{user_name}},\\n\\nPayment of {{amount}} received. Thank you!'),
+  ('shipping_started', '📦 {{novel_title}} is on its way',
+    '<p>Hi {{user_name}},</p><p>Your printed copy shipped!</p><p>Tracking: {{tracking_number}}</p>',
+    'Hi {{user_name}},\\n\\nYour printed copy shipped!\\n\\nTracking: {{tracking_number}}'),
+  ('shipping_delivered', '🎉 Your book arrived',
+    '<p>Hi {{user_name}},</p><p>Your tiny book has been delivered. Enjoy!</p>',
+    'Hi {{user_name}},\\n\\nYour tiny book has been delivered. Enjoy!'),
+  ('streak_reward', '🔥 You earned {{coins}} coins!',
+    '<p>Hi {{user_name}},</p><p>You listened {{streak_days}} nights in a row — {{coins}} coins added.</p>',
+    'Hi {{user_name}},\\n\\nYou listened {{streak_days}} nights in a row — {{coins}} coins added.')
+on conflict (key) do nothing;
+
+alter table public.email_templates enable row level security;
+alter table public.email_sends enable row level security;
+
+drop policy if exists email_templates_admin on public.email_templates;
+create policy email_templates_admin on public.email_templates
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+
+drop policy if exists email_sends_admin on public.email_sends;
+create policy email_sends_admin on public.email_sends
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+
+drop policy if exists email_sends_service on public.email_sends;
+create policy email_sends_service on public.email_sends
+  for insert with check (true);
+`;
+
 const PROMOTE_SQL = `-- Promote section: reviews, social posts, alerts.
 
 create table if not exists public.promo_connections (
@@ -398,6 +465,43 @@ export default function SetupPage() {
             <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
             <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
               {CATEGORIES_SQL}
+            </pre>
+          </details>
+        </CardContent>
+      </Card>
+
+      {/* Migration 1f — Auto emails */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Database className="h-5 w-5 text-blue-600" />
+            Migration 1f — Auto emails
+          </CardTitle>
+          <CardDescription>
+            Adds <code className="text-xs">email_templates</code> and <code className="text-xs">email_sends</code> tables
+            with 6 seeded templates (welcome, order, payment, shipping, delivered, streak reward).
+            Templates are editable at Auto → Email Templates.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Button
+              className="gap-2 bg-teal-600 hover:bg-teal-700"
+              onClick={() => copySql("auto_email", AUTO_EMAIL_SQL)}
+            >
+              {copied === "auto_email" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied === "auto_email" ? "Copied!" : "Copy SQL"}
+            </Button>
+            <a href={SUPABASE_SQL_URL} target="_blank" rel="noreferrer">
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" /> Open editor
+              </Button>
+            </a>
+          </div>
+          <details className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
+            <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
+              {AUTO_EMAIL_SQL}
             </pre>
           </details>
         </CardContent>

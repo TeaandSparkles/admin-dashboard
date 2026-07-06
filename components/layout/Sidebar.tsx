@@ -32,6 +32,9 @@ import {
   Instagram,
   Music2,
   Megaphone,
+  Zap,
+  Mail,
+  ScrollText,
   LucideIcon,
 } from "lucide-react";
 
@@ -89,6 +92,14 @@ const NAV_SECTIONS: NavSection[] = [
       { label: "Facebook Posts", href: "/promote/facebook", icon: Facebook, alertPlatform: "facebook" },
       { label: "Instagram Posts", href: "/promote/instagram", icon: Instagram, alertPlatform: "instagram" },
       { label: "TikTok Posts", href: "/promote/tiktok", icon: Music2, alertPlatform: "tiktok" },
+    ],
+  },
+  {
+    label: "Auto",
+    items: [
+      { label: "Email Templates", href: "/auto/templates", icon: Mail },
+      { label: "Triggers", href: "/auto/triggers", icon: Zap },
+      { label: "Send Log", href: "/auto/log", icon: ScrollText },
     ],
   },
   {
