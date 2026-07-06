@@ -123,6 +123,87 @@ create index if not exists stories_genre_idx on public.stories(genre);
 create index if not exists stories_theme_idx on public.stories(theme);
 `;
 
+const PROMOTE_SQL = `-- Promote section: reviews, social posts, alerts.
+
+create table if not exists public.promo_connections (
+  platform text primary key,
+  connected_at timestamptz,
+  access_token text,
+  refresh_token text,
+  expires_at timestamptz,
+  account_label text,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.google_reviews (
+  id uuid primary key default gen_random_uuid(),
+  external_id text unique not null,
+  reviewer_name text,
+  reviewer_photo text,
+  rating int,
+  comment text,
+  review_url text,
+  responded boolean not null default false,
+  responded_at timestamptz,
+  created_at timestamptz not null default now(),
+  fetched_at timestamptz not null default now()
+);
+create index if not exists google_reviews_responded_idx on public.google_reviews(responded);
+create index if not exists google_reviews_created_idx on public.google_reviews(created_at desc);
+
+create table if not exists public.social_posts (
+  id uuid primary key default gen_random_uuid(),
+  platform text not null,
+  external_id text not null,
+  post_url text,
+  caption text,
+  media_url text,
+  likes int default 0,
+  comments int default 0,
+  posted_at timestamptz,
+  fetched_at timestamptz not null default now(),
+  unique(platform, external_id)
+);
+create index if not exists social_posts_platform_idx on public.social_posts(platform, posted_at desc);
+
+create table if not exists public.promo_alerts (
+  id uuid primary key default gen_random_uuid(),
+  platform text not null,
+  kind text not null,
+  title text not null,
+  body text,
+  external_url text,
+  is_read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists promo_alerts_unread_idx on public.promo_alerts(platform) where is_read = false;
+
+alter table public.promo_connections enable row level security;
+alter table public.google_reviews enable row level security;
+alter table public.social_posts enable row level security;
+alter table public.promo_alerts enable row level security;
+
+drop policy if exists promo_admin_all_conn on public.promo_connections;
+create policy promo_admin_all_conn on public.promo_connections
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+
+drop policy if exists promo_admin_all_reviews on public.google_reviews;
+create policy promo_admin_all_reviews on public.google_reviews
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+
+drop policy if exists promo_admin_all_posts on public.social_posts;
+create policy promo_admin_all_posts on public.social_posts
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+
+drop policy if exists promo_admin_all_alerts on public.promo_alerts;
+create policy promo_admin_all_alerts on public.promo_alerts
+  for all using (public.is_admin() or public.is_management())
+  with check (public.is_admin() or public.is_management());
+`;
+
 const SITE_CONTENT_SQL = `-- Editable Contact / Terms / Privacy / Feedback pages
 -- Admin can edit these live at /content/[key]. Public app reads via RLS select.
 
@@ -317,6 +398,42 @@ export default function SetupPage() {
             <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
             <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
               {CATEGORIES_SQL}
+            </pre>
+          </details>
+        </CardContent>
+      </Card>
+
+      {/* Migration 1e — Promote */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Database className="h-5 w-5 text-blue-600" />
+            Migration 1e — Promote (Reviews & Social)
+          </CardTitle>
+          <CardDescription>
+            Adds tables for Google reviews, social posts (FB/IG/TikTok), OAuth connections, and a
+            unified alerts feed that drives the sidebar red badge counts.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Button
+              className="gap-2 bg-teal-600 hover:bg-teal-700"
+              onClick={() => copySql("promote", PROMOTE_SQL)}
+            >
+              {copied === "promote" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied === "promote" ? "Copied!" : "Copy SQL"}
+            </Button>
+            <a href={SUPABASE_SQL_URL} target="_blank" rel="noreferrer">
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" /> Open editor
+              </Button>
+            </a>
+          </div>
+          <details className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">Preview SQL</summary>
+            <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-white p-3 text-xs leading-relaxed text-gray-700 font-mono">
+              {PROMOTE_SQL}
             </pre>
           </details>
         </CardContent>

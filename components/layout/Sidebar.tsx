@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth";
+import { supabase } from "@/lib/supabaseClient";
 import {
   LayoutDashboard,
   Users,
@@ -25,6 +27,11 @@ import {
   MessageSquare,
   FileText,
   MailQuestion,
+  Star,
+  Facebook,
+  Instagram,
+  Music2,
+  Megaphone,
   LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +39,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  alertPlatform?: string;   // when set, badge shows unread count from promo_alerts
 }
 
 interface NavSection {
@@ -75,6 +83,15 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: "Promote",
+    items: [
+      { label: "Google Reviews", href: "/promote/reviews", icon: Star, alertPlatform: "google" },
+      { label: "Facebook Posts", href: "/promote/facebook", icon: Facebook, alertPlatform: "facebook" },
+      { label: "Instagram Posts", href: "/promote/instagram", icon: Instagram, alertPlatform: "instagram" },
+      { label: "TikTok Posts", href: "/promote/tiktok", icon: Music2, alertPlatform: "tiktok" },
+    ],
+  },
+  {
     label: "Staff Management",
     items: [{ label: "Staff Users", href: "/staff", icon: Shield }],
   },
@@ -102,6 +119,27 @@ const NAV_SECTIONS: NavSection[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [unread, setUnread] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    async function loadCounts() {
+      const platforms = ["google", "facebook", "instagram", "tiktok"];
+      const counts: Record<string, number> = {};
+      for (const p of platforms) {
+        const { count } = await supabase
+          .from("promo_alerts")
+          .select("*", { count: "exact", head: true })
+          .eq("platform", p)
+          .eq("is_read", false);
+        counts[p] = count ?? 0;
+      }
+      setUnread(counts);
+    }
+    loadCounts().catch(() => {});
+    // Poll every 60s
+    const timer = setInterval(loadCounts, 60_000);
+    return () => clearInterval(timer);
+  }, [pathname]);
 
   async function handleSignOut() {
     await signOut();
@@ -133,11 +171,12 @@ export default function Sidebar() {
               {section.label}
             </p>
             <div className="flex flex-col gap-1">
-              {section.items.map(({ label, href, icon: Icon }) => {
+              {section.items.map(({ label, href, icon: Icon, alertPlatform }) => {
                 const active =
                   href === "/dashboard"
                     ? pathname === "/dashboard"
                     : pathname === href || pathname.startsWith(href + "/");
+                const badgeCount = alertPlatform ? unread[alertPlatform] ?? 0 : 0;
                 return (
                   <Link
                     key={href}
@@ -155,7 +194,12 @@ export default function Sidebar() {
                         active ? "text-blue-600" : "text-sidebar-foreground/60"
                       )}
                     />
-                    {label}
+                    <span className="flex-1">{label}</span>
+                    {badgeCount > 0 && (
+                      <span className="ml-auto inline-flex min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                        {badgeCount > 99 ? "99+" : badgeCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
