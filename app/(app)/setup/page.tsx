@@ -123,6 +123,11 @@ create index if not exists stories_genre_idx on public.stories(genre);
 create index if not exists stories_theme_idx on public.stories(theme);
 `;
 
+const REFERRALS_DRIPS_SQL = `-- REFERRALS + DRIP CAMPAIGNS + PER-USER OPT-OUT
+-- Run the full script from supabase/migrations/20260707_referrals_and_drips.sql
+-- (long — grab it from the repo or open the Preview toggle below)
+`;
+
 const AUTO_EMAIL_SQL = `-- Auto-emails: editable templates + send log.
 
 create table if not exists public.email_templates (
@@ -467,6 +472,42 @@ export default function SetupPage() {
               {CATEGORIES_SQL}
             </pre>
           </details>
+        </CardContent>
+      </Card>
+
+      {/* Migration 1g — Referrals + drip campaigns */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Database className="h-5 w-5 text-blue-600" />
+            Migration 1g — Referrals + Drip campaigns
+          </CardTitle>
+          <CardDescription>
+            Adds <code className="text-xs">referrals</code>, <code className="text-xs">drip_campaigns</code>,
+            <code className="text-xs">drip_steps</code>, <code className="text-xs">drip_lists</code>,
+            <code className="text-xs">drip_enrollments</code>, per-user opt-out, and DB triggers
+            that auto-enroll signups and auto-reward first purchases.
+            Full script is in the repo — copy from the file
+            <code className="mx-1 text-xs">supabase/migrations/20260707_referrals_and_drips.sql</code>.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <a
+              href="https://github.com/TeaandSparkles/admin-dashboard/blob/main/supabase/migrations/20260707_referrals_and_drips.sql"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Button className="gap-2 bg-teal-600 hover:bg-teal-700">
+                <ExternalLink className="h-4 w-4" /> View full SQL on GitHub
+              </Button>
+            </a>
+            <a href={SUPABASE_SQL_URL} target="_blank" rel="noreferrer">
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" /> Open Supabase editor
+              </Button>
+            </a>
+          </div>
         </CardContent>
       </Card>
 

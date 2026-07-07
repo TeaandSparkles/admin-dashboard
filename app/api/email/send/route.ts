@@ -58,6 +58,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `Template ${template_key} is disabled` }, { status: 403 });
     }
 
+    // Per-user opt-out check — the global kill switch
+    const { data: userRow } = await supabase
+      .from("users")
+      .select("email_opted_out")
+      .eq("email", to_email)
+      .maybeSingle();
+    if (userRow?.email_opted_out) {
+      await supabase.from("email_sends").insert({
+        template_key,
+        to_email,
+        subject: template.subject,
+        status: "skipped",
+        error: "recipient opted out",
+        variables,
+      });
+      return NextResponse.json({ ok: true, skipped: true, reason: "opted out" });
+    }
+
     const subject = render(template.subject, variables);
     const html = render(template.html_body, variables);
     const text = render(template.text_body, variables);

@@ -35,6 +35,9 @@ import {
   Zap,
   Mail,
   ScrollText,
+  Gift,
+  Repeat,
+  ListChecks,
   LucideIcon,
 } from "lucide-react";
 
@@ -64,6 +67,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: "Monetization", href: "/monetization", icon: DollarSign },
       { label: "Coins Economy", href: "/coins", icon: Coins },
+      { label: "Referrals", href: "/referrals", icon: Gift },
       { label: "Novels Analytics", href: "/analytics/novels", icon: BarChart3 },
       { label: "Episodes Analytics", href: "/analytics/episodes", icon: BarChart3 },
     ],
@@ -98,6 +102,8 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Auto",
     items: [
       { label: "Email Templates", href: "/auto/templates", icon: Mail },
+      { label: "Drip Campaigns", href: "/drips", icon: Repeat },
+      { label: "Audience Lists", href: "/drips/lists", icon: ListChecks },
       { label: "Triggers", href: "/auto/triggers", icon: Zap },
       { label: "Send Log", href: "/auto/log", icon: ScrollText },
     ],

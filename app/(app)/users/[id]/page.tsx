@@ -28,6 +28,16 @@ interface UserDetail {
   referral_code: string | null;
   coin_balance: number | null;
   created_at: string | null;
+  email_opted_out: boolean | null;
+}
+
+interface UserEnrollment {
+  id: string;
+  campaign_id: string;
+  current_step: number;
+  next_send_at: string | null;
+  status: string;
+  campaign: { name: string; slug: string } | null;
 }
 
 interface UserOrder {
@@ -72,6 +82,8 @@ export default function UserDetailPage({
   const [allNovels, setAllNovels] = useState<NovelOption[]>([]);
   const [novelSearch, setNovelSearch] = useState("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [enrollments, setEnrollments] = useState<UserEnrollment[]>([]);
+  const [togglingOptOut, setTogglingOptOut] = useState(false);
   const [form, setForm] = useState({ role: "user", username: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -81,11 +93,11 @@ export default function UserDetailPage({
   useEffect(() => {
     async function fetchAll() {
       setLoading(true);
-      const [userRes, ordersRes, coinsRes, accessRes, novelsRes] = await Promise.all([
+      const [userRes, ordersRes, coinsRes, accessRes, novelsRes, enrollRes] = await Promise.all([
         supabase
           .from("users")
           .select(
-            "id, username, email, role, phone_number, email_verified, phone_verified, referred_by_user_id, referral_code, coin_balance, created_at"
+            "id, username, email, role, phone_number, email_verified, phone_verified, referred_by_user_id, referral_code, coin_balance, created_at, email_opted_out"
           )
           .eq("id", id)
           .single(),
@@ -109,6 +121,11 @@ export default function UserDetailPage({
           .select("id, title, language")
           .eq("published", true)
           .order("title"),
+        supabase
+          .from("drip_enrollments")
+          .select("id, campaign_id, current_step, next_send_at, status, campaign:drip_campaigns(name, slug)")
+          .eq("user_id", id)
+          .order("enrolled_at", { ascending: false }),
       ]);
 
       if (userRes.error) setError(userRes.error.message);
@@ -122,10 +139,35 @@ export default function UserDetailPage({
       setCoins((coinsRes.data as unknown as CoinTx[]) ?? []);
       setAccess((accessRes.data as unknown as AccessRow[]) ?? []);
       setAllNovels((novelsRes.data as unknown as NovelOption[]) ?? []);
+      setEnrollments((enrollRes.data as unknown as UserEnrollment[]) ?? []);
       setLoading(false);
     }
     fetchAll();
   }, [id]);
+
+  async function toggleOptOut() {
+    if (!user) return;
+    setTogglingOptOut(true);
+    const next = !user.email_opted_out;
+    const { error: err } = await supabase.from("users").update({
+      email_opted_out: next,
+      email_opted_out_at: next ? new Date().toISOString() : null,
+      email_opted_out_reason: next ? "admin_toggle" : null,
+    }).eq("id", user.id);
+    if (err) setError(err.message);
+    else setUser({ ...user, email_opted_out: next });
+    setTogglingOptOut(false);
+  }
+
+  async function pauseEnrollment(enrollmentId: string) {
+    await supabase.from("drip_enrollments").update({ status: "paused", paused_reason: "admin_paused" }).eq("id", enrollmentId);
+    setEnrollments((prev) => prev.map((e) => e.id === enrollmentId ? { ...e, status: "paused" } : e));
+  }
+
+  async function resumeEnrollment(enrollmentId: string) {
+    await supabase.from("drip_enrollments").update({ status: "active" }).eq("id", enrollmentId);
+    setEnrollments((prev) => prev.map((e) => e.id === enrollmentId ? { ...e, status: "active" } : e));
+  }
 
   async function toggleAccess(novel: NovelOption) {
     setError(null);
@@ -280,6 +322,67 @@ export default function UserDetailPage({
               label="Joined"
               value={user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
             />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Communication preferences + drip enrollments */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Email communications</CardTitle>
+            <CardDescription>Master switch for every auto-email and drip</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className={`rounded-xl border p-4 transition ${user.email_opted_out ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm">
+                    {user.email_opted_out ? "🚫 Opted out — no emails sent" : "✓ Receiving emails"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {user.email_opted_out
+                      ? "Every send is blocked and every active drip pauses for this user."
+                      : "Templates and drip campaigns can send to this user."}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={toggleOptOut}
+                  disabled={togglingOptOut}
+                  size="sm"
+                  className={user.email_opted_out ? "bg-green-600 hover:bg-green-700 text-white" : "bg-red-500 hover:bg-red-600 text-white"}
+                >
+                  {togglingOptOut ? "…" : user.email_opted_out ? "Turn communications ON" : "Turn communications OFF"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-0 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Drip enrollments ({enrollments.length})</CardTitle>
+            <CardDescription>Which campaigns this user is in</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {enrollments.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Not enrolled in any campaign</p>}
+            {enrollments.map((e) => (
+              <div key={e.id} className="flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2 text-sm">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate">{e.campaign?.name ?? e.campaign_id}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Step {e.current_step + 1} · {e.status}
+                    {e.next_send_at && ` · next ${new Date(e.next_send_at).toLocaleDateString()}`}
+                  </p>
+                </div>
+                {e.status === "active" ? (
+                  <Button variant="ghost" size="sm" onClick={() => pauseEnrollment(e.id)} className="text-amber-600">Pause</Button>
+                ) : e.status === "paused" ? (
+                  <Button variant="ghost" size="sm" onClick={() => resumeEnrollment(e.id)} className="text-green-600">Resume</Button>
+                ) : null}
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
