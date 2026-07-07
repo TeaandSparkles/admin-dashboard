@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Facebook, ExternalLink, Heart, MessageCircle } from "lucide-react";
+import { ThumbsUp, ExternalLink, Heart, MessageCircle } from "lucide-react";
 import { ChannelHeader, ConnectionStatus, AlertsFeed } from "@/components/PromoteChannel";
 
 interface Post {
@@ -40,7 +40,7 @@ export default function FacebookPage() {
         title="Facebook Posts"
         description="See every post published to your Facebook Page. Get alerts on comments and mentions that need a reply."
         platform="Meta · Facebook"
-        icon={Facebook}
+        icon={ThumbsUp}
         color="bg-gradient-to-br from-blue-600 to-blue-800"
       />
 

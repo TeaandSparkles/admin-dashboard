@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Instagram, ExternalLink, Heart, MessageCircle } from "lucide-react";
+import { Camera, ExternalLink, Heart, MessageCircle } from "lucide-react";
 import { ChannelHeader, ConnectionStatus, AlertsFeed } from "@/components/PromoteChannel";
 
 interface Post {
@@ -40,7 +40,7 @@ export default function InstagramPage() {
         title="Instagram Posts"
         description="See your Instagram Business posts. Alerts fire when new comments or mentions land."
         platform="Meta · Instagram Business"
-        icon={Instagram}
+        icon={Camera}
         color="bg-gradient-to-br from-pink-500 via-red-500 to-yellow-500"
       />
 
@@ -79,7 +79,7 @@ export default function InstagramPage() {
                   <img src={p.media_url} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <Instagram className="h-6 w-6 text-gray-300" />
+                    <Camera className="h-6 w-6 text-gray-300" />
                   </div>
                 )}
                 <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 via-transparent opacity-0 transition group-hover:opacity-100">

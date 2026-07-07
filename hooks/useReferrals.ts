@@ -43,7 +43,7 @@ export function useReferrals(): UseReferralsResult {
       if (fetchError) {
         setError(fetchError.message);
       } else {
-        setReferrals((data as ReferralRow[]) ?? []);
+        setReferrals((data as unknown as ReferralRow[]) ?? []);
       }
       setLoading(false);
     }
