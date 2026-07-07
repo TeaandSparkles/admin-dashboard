@@ -1,10 +1,10 @@
 export const metadata = {
   title: "Privacy Policy — Starship StoryTime",
-  description: "How Starship StoryTime by Tea and Sparkles handles your data",
+  description: "How Starship StoryTime handles your data",
 };
 
 const LAST_UPDATED = "May 27, 2026";
-const COMPANY = "Tea and Sparkles";
+const COMPANY = "Starship StoryTime";
 const APP = "Starship StoryTime";
 const CONTACT_EMAIL = "learningchateau@gmail.com";
 

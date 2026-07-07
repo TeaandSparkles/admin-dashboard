@@ -4,7 +4,7 @@ export const metadata = {
 };
 
 const LAST_UPDATED = "May 27, 2026";
-const COMPANY = "Tea and Sparkles";
+const COMPANY = "Starship StoryTime";
 const APP = "Starship StoryTime";
 const CONTACT_EMAIL = "learningchateau@gmail.com";
 

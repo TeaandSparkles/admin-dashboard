@@ -11,7 +11,7 @@ export default function SupportPage() {
           Support
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Starship StoryTime · Tea and Sparkles
+          Starship StoryTime
         </p>
       </header>
 
