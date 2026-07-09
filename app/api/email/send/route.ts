@@ -59,9 +59,10 @@ export async function POST(req: Request) {
     }
 
     // Per-user opt-out check — the global kill switch
+    // Also fetch unsubscribe_token so we can auto-append the unsub link
     const { data: userRow } = await supabase
       .from("users")
-      .select("email_opted_out")
+      .select("email_opted_out, unsubscribe_token")
       .eq("email", to_email)
       .maybeSingle();
     if (userRow?.email_opted_out) {
@@ -76,10 +77,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, skipped: true, reason: "opted out" });
     }
 
-    const subject = render(template.subject, variables);
-    const html = render(template.html_body, variables);
-    const text = render(template.text_body, variables);
+    // Compute unsubscribe URL and inject it into template variables + as email header
+    const origin = new URL(req.url).origin;
+    const unsubUrl = (userRow as { unsubscribe_token?: string })?.unsubscribe_token
+      ? `${origin}/u/${(userRow as { unsubscribe_token: string }).unsubscribe_token}`
+      : `${origin}/u/unknown`;
+    const fullVars = { ...variables, unsubscribe_url: unsubUrl };
+
+    const subject = render(template.subject, fullVars);
+    let html = render(template.html_body, fullVars);
+    let text = render(template.text_body, fullVars);
     const from = `${template.from_name} <${template.from_email}>`;
+
+    // Auto-append a footer if the template didn't use {{unsubscribe_url}}
+    if (!template.html_body.includes("unsubscribe_url")) {
+      html += `<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0" /><p style="font-size:11px;color:#94a3b8">You&#39;re receiving this because you have an account with Starship StoryTime. <a href="${unsubUrl}" style="color:#94a3b8;text-decoration:underline">Unsubscribe</a>.</p>`;
+    }
+    if (!template.text_body.includes("unsubscribe_url")) {
+      text += `\n\n---\nYou're receiving this because you have an account with Starship StoryTime.\nUnsubscribe: ${unsubUrl}`;
+    }
 
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -87,7 +103,17 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${resendKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from, to: [to_email], subject, html, text }),
+      body: JSON.stringify({
+        from,
+        to: [to_email],
+        subject,
+        html,
+        text,
+        headers: {
+          "List-Unsubscribe": `<${unsubUrl}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
+      }),
     });
 
     const resendBody = await resendRes.json().catch(() => ({}));
